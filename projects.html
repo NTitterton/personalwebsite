@@ -42,7 +42,7 @@
         <p class="mb-0">Notice how this program works: if the vertices are in different sets, the corresponding variables' dot product will be -1, so the weight of that edge will be multiplied by 2 and added to the objective function. If they are in the same set, the edge weight isn't included in the objective function at all. As for solving this program, Integer Quadratic Programming cannot be solved in polynomial time, but Vector Programming can by reducing to Semidefinite Programming, so let's do that.</p>
         <img class="img-fluid" src="./imgs/maxcut-VP.png" alt="\text{maximize } & \frac{1}{2}\sum_{(u, v) \in E} w_{ij}(1 - v_i \cdot v_j) \\ \text{subject to }  & v_i \cdot v_i = 1 \hspace{1.15cm} \forall i \in V \\ & v_i \in \mathcal{R}^n \hspace{1.45cm} \forall i \in V">
         <p class="mb-0">Where n is the number of vertices. From here we convert the Vector Program to a Semidefinite Program.</p>
-        <img class="img-fluid" src="./imgs/maxcut-VP.png" alt="\text{maximize } & ||A \odot (1 - V)||_1 \\ \text{subject to }  & V_{ii} = 1 \hspace{1.5cm} \forall i \in V \\ & V \in \mathcal{R}^{n \times n}">
+        <img class="img-fluid" src="./imgs/maxcut-SDP.png" alt="\text{maximize } & ||A \odot (1 - V)||_1 \\ \text{subject to }  & V_{ii} = 1 \hspace{1.5cm} \forall i \in V \\ & V \in \mathcal{R}^{n \times n}">
         <p class="mb-0">To be continued. Todo: fix top margin on images, figure out how to slickly embed code for next part of explanation.</p>
         </div>
       </div>
