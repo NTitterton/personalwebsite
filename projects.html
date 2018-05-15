@@ -36,20 +36,51 @@
         <p>While taking CS294-145 (Approximation Algorithms), I wanted to implement Goemans-Williamson's 0.879-approximation for max cut (I had also seen it in CS294-134 (Beyond Worst Case Analysis)). I wrote the randomized 0.5-approximation algorithm (pick a random cut with equal-sized halves), the derandomized greedy 0.5-approximation algorithm (repeatedly add a vertex to the set that increases the cut more) and the 0.879-approximation algorithm, using cxvpy and numpy. </p>
         <p>Code and basic tests can be found in the associated <a href="https://github.com/NTitterton/approximationproblems">Github repo</a>.</p>
         <p>
-        <h4>An Integer Quadratic Program for Max Cut</h4>
-        <p class="mb-0">It is first reasonable to write a program for Max Cut and see what we can do from there.</p>
+        <h4>A Semidefinite Program for Max Cut</h4>
+        <p>It is first reasonable to write an Integer Quadratic Program for Max Cut and see what we can do from there.</p>
         $$\text{maximize } \frac{1}{2}\sum\limits_{(i, j) \in E} w_{ij}(1 - x_i \cdot x_j)$$
         $$\text{subject to } x_i \cdot x_i = 1 \hspace{1cm} \forall i \in V$$
         $$x_i \in \{-1, 1\} \hspace{1cm} \forall i \in V$$
-        <p class="mb-0">Notice how this program works: if the vertices are in different sets, the corresponding variables' dot product will be -1, so the weight of that edge will be multiplied by 2 and added to the objective function. If they are in the same set, the edge weight isn't included in the objective function at all. As for solving this program, Integer Quadratic Programming cannot be solved in polynomial time, but Vector Programming can by reducing to Semidefinite Programming, so let's do that.</p>
+        <p>Notice how this program works: if the vertices are in different sets, the corresponding variables' dot product will be -1, so the weight of that edge will be multiplied by 2 and added to the objective function. If they are in the same set, the edge weight isn't included in the objective function at all. As for solving this program, Integer Quadratic Programming cannot be solved in polynomial time, but Vector Programming can by reducing to Semidefinite Programming, so let's do that.</p>
         $$\text{maximize } \frac{1}{2}\sum_{(i, j) \in E} w_{ij}(1 - x_i \cdot x_j)$$
         $$\text{subject to } x_i \cdot x_i = 1 \hspace{1cm} \forall i \in V$$
         $$x_i \in \mathcal{R}^n \hspace{1cm} \forall i \in V$$
-        <p class="mb-0">Where n is the number of vertices. From here we convert the Vector Program to a Semidefinite Program.</p>
+        <p>Where \(n\) is the number of vertices. From here we convert the Vector Program to a Semidefinite Program.</p>
         $$\text{maximize } ||A \circ (1 - X)||_1$$
         $$\text{subject to } X_{ii} = 1 \hspace{1cm} \forall i \in V$$
         $$X \in \mathcal{R}^{n \times n}$$
-        <p class="mb-0">This Semidefinite Program will want to push the vectors of vertices that share an edge away from eachother, to decrease the dot product between them and thus increase the objective function. How do we form a cut out of the vectors? The answer is surpisingly simple, pick a random vector r that represents a hyperplane; divide vertex vectors into above and below the hyperplane to form the cut (\(v_i \cdot r \geq 0\) and \(v_i \cdot r < 0\), respectively).</p>
+        <p>This Semidefinite Program will want to push the vectors of vertices that share an edge away from eachother, to decrease the dot product between them and thus increase the objective function. How do we form a cut out of the vectors? The answer is surpisingly simple, pick a random vector r that represents a hyperplane; divide vertex vectors into above and below the hyperplane to form the cut (\(v_i \cdot r \geq 0\) and \(v_i \cdot r < 0\), respectively).</p>
+        <p>But before we get into that, what about the code for the SDP? Here are the important lines in cvxpy and numpy:</p>
+        <pre><code>  # setup
+  V, x, constraints, expr = len(G), [], [], 0
+  if is_adj_list:
+    G = _adj_list_to_adj_matrx(G)
+
+  # variables       
+  X = cvx.Variable((V, V), PSD=True)
+
+  # constraints
+  for i in range(V):
+    constraints.append(X[i, i] == 1)
+
+  # objective function  
+  expr = cvx.sum(cvx.multiply(G, (np.ones((V, V)) - X)))
+
+  # solve
+  prob = cvx.Problem(cvx.Maximize(expr), constraints)
+  prob.solve()</code></pre>
+          <p>After this, you can extract the vectors from \(X\) using a Cholesky Decomposition, but there is a problem: due to numerical instability, there are a few eigenvectors in \(X\) that are negative (something like -1e-5). To combat this, we add a tiny bit of regularization</p>
+          <pre><code>  Xnew = X.value
+  eigs = np.linalg.eigh(Xnew)[0]
+  if min(eigs) < 0:
+    Xnew = Xnew + (1.00001 * abs(min(eigs)) * np.identity(V))
+  elif min(eigs) == 0:
+    Xnew = Xnew + 0.0000001 * np.identity(V)
+  x = np.linalg.cholesky(Xnew).T</code></pre>
+          <p>The last step is to generate a random vector and seperate the vectors into two sets.
+          <pre><code>  r = np.random.normal(size=(V))
+  return [1 if np.dot(x[i], r) >= 0 else -1 for i in range(V)]</code></pre>
+          <p>How does it perform? To test this, I generated some \(p=\frac{1}{2}\) random graphs and checked the three implementations against eachother. Assuming the greedy solution is close to optimal, the ratio approaches about 0.9 (stopping at 128 vertices), which is within the 0.879 theoretical bound. I'm not going to try to prove the bound here: I recommend reading one of the many proofs online to get an idea of where the ratio comes from.</p>
         </div>
       </div>
     </div>
