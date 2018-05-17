@@ -80,7 +80,7 @@
           <p>The last step is to generate a random vector and seperate the vectors into two sets.
           <pre><code>  r = np.random.normal(size=(V))
   return [1 if np.dot(x[i], r) >= 0 else -1 for i in range(V)]</code></pre>
-          <p>How does it perform? To test this, I generated some \(p=\frac{1}{2}\) random graphs and checked the three implementations against eachother. Assuming the greedy solution is close to optimal, the ratio approaches about 0.9 (stopping at 128 vertices), which is within the 0.879 theoretical bound. I'm not going to try to prove the bound here: I recommend reading one of the many proofs online to get an idea of where the ratio comes from.</p>
+          <p>How does it perform? To test this, I generated some \(p=\frac{1}{2}\) random graphs and checked the three implementations against eachother. Assuming the greedy solution is close to optimal, the ratio approaches about 0.9 (stopping at 128 vertices; the SDP runs in \(\Omega(n^3)\)), which is within the 0.879 theoretical bound. I'm not going to try to prove the bound here: I recommend reading one of the many proofs online to get an idea of where the ratio comes from.</p>
         </div>
       </div>
     </div>
