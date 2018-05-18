@@ -46,7 +46,7 @@
         $$\text{subject to } x_i \cdot x_i = 1 \hspace{1cm} \forall i \in V$$
         $$x_i \in \mathcal{R}^n \hspace{1cm} \forall i \in V$$
         <p>Where \(n\) is the number of vertices. From here we convert the Vector Program to a Semidefinite Program.</p>
-        $$\text{maximize } ||A \circ (1 - X)||_1$$
+        $$\text{maximize } ||A \odot (1 - X)||_1$$
         $$\text{subject to } X_{ii} = 1 \hspace{1cm} \forall i \in V$$
         $$X \in \mathcal{R}^{n \times n}$$
         <p>This Semidefinite Program will want to push the vectors of vertices that share an edge away from eachother, to decrease the dot product between them and thus increase the objective function. How do we form a cut out of the vectors? The answer is surpisingly simple, pick a random vector r that represents a hyperplane; divide vertex vectors into above and below the hyperplane to form the cut (\(v_i \cdot r \geq 0\) and \(v_i \cdot r < 0\), respectively).</p>
