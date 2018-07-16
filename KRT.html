@@ -7,8 +7,13 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
-    <link rel="stylesheet" href="./style/main.css">
+    <link rel="stylesheet" href="style/main.css">
 
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <!-- <script src="trees_new.js"></script> -->
+
+    <script src="./scripts/treesbundle.js"></script>
     <title>Nick Titterton</title>
   </head>
   <body>
@@ -31,32 +36,9 @@
         </div>
       </div>
       <div class="row justify-content-center mt-3">
-        <div class="col-9">
+        <div class="col-9"><div id="trees_container"></div>
           <!-- WebGL stuff goes here -->
           <canvas id="glCanvas" width="500" height="500"></canvas>
-          <script>
-            main();
-
-            //
-            // start here
-            //
-            function main() {
-              const canvas = document.querySelector("#glCanvas");
-              // Initialize the GL context
-              const gl = canvas.getContext("webgl");
-
-              // Only continue if WebGL is available and working
-              if (!gl) {
-                alert("Unable to initialize WebGL. Your browser or machine may not support it.");
-                return;
-              }
-
-              // Set clear color to black, fully opaque
-              gl.clearColor(0.0, 0.0, 0.0, 1.0);
-              // Clear the color buffer with specified clear color
-              gl.clear(gl.COLOR_BUFFER_BIT);
-            }
-          </script>
         </div>
       </div>
     </div>
@@ -67,6 +49,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-
   </body>
 </html>

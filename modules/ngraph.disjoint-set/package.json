@@ -1,0 +1,59 @@
+{
+  "_from": "ngraph.disjoint-set",
+  "_id": "ngraph.disjoint-set@1.0.0",
+  "_inBundle": false,
+  "_integrity": "sha1-pFAoKwzWRgt6X5GK432TH1E8yzg=",
+  "_location": "/ngraph.disjoint-set",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "ngraph.disjoint-set",
+    "name": "ngraph.disjoint-set",
+    "escapedName": "ngraph.disjoint-set",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/ngraph.disjoint-set/-/ngraph.disjoint-set-1.0.0.tgz",
+  "_shasum": "a450282b0cd6460b7a5f918ae37d931f513ccb38",
+  "_spec": "ngraph.disjoint-set",
+  "_where": "/Users/nicktitterton/Desktop/Misc/personalwebsite",
+  "author": {
+    "name": "Andrei Kashcha"
+  },
+  "bugs": {
+    "url": "https://github.com/anvaka/ngraph.disjoint-set/issues"
+  },
+  "bundleDependencies": false,
+  "deprecated": false,
+  "description": "Disjoint-set data structure",
+  "devDependencies": {
+    "tap": "^2.2.0"
+  },
+  "homepage": "https://github.com/anvaka/ngraph.disjoint-set#readme",
+  "keywords": [
+    "ngraph",
+    "dijoint",
+    "set",
+    "union",
+    "find",
+    "merge",
+    "find"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "ngraph.disjoint-set",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anvaka/ngraph.disjoint-set.git"
+  },
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "version": "1.0.0"
+}
