@@ -42,6 +42,42 @@ var DisjointSet = require("../modules/ngraph.disjoint-set");
 
 function l2dist(a, b) { return Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])); }
 
+function intersection(setA, setB) { // taken from Mozilla at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+    var _intersection = new Set();
+    for (var elem of setB) {
+        if (setA.has(elem)) {
+            _intersection.add(elem);
+        }
+    }
+    return _intersection;
+}
+
+function ball(points, i, rad) {
+  var ball = new Set();
+  for (var j = 0; j < points.length; j++) {
+    if (l2dist(points[i], points[j]) < rad) {
+      ball.add(j)
+    }
+  }
+  return ball;
+}
+
+function singletons(s) {
+  for (var t of s) {
+    if (t.val.size > 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
+class Tree {
+  constructor(val) {
+    this.val = val;
+    this.branches = [];
+  }
+}
+
 function main() {
   // const qcanvas = document.querySelector("#glCanvas");
   // Initialize the GL context
@@ -54,11 +90,68 @@ function main() {
     var width = 500;
     var height = 500;
     var numPoints = 100;
-    var delay = 100;
+    var delay = 0;
     var points = [];
     for (var i = 0; i < numPoints; i++) {
       points.push([Math.floor(Math.random() * width), Math.floor(Math.random() * height)]);
     }
+
+    // FRT
+    var maxdist = 0;
+    for (var i = 0; i < numPoints; i++) {
+      for (var j = i + 1; j < numPoints; j++) {
+        var newdist = l2dist(points[i], points[j]);
+        if (l2dist(points[i], points[j]) > maxdist) {
+          maxdist = newdist;
+        }
+      }
+    }
+    var toprad = 2;
+    var i = 0;
+    while (toprad < 2 * maxdist) {
+      toprad *= 2;
+      i++;
+    }
+    var beta = 0.5 + (Math.random() / 2);
+    var D = [];
+    var circles = [];
+    D.push(new Set());
+    var root = new Tree(new Set([...Array(numPoints).keys()]));
+    D[0].add(root);
+    var rad = beta * toprad;
+    circles.push([0, rad]);
+    while (i > 0 && !singletons(D[D.length - 1])) {
+      console.log("i: " + i);
+      console.log("rad: " + rad)
+      rad /= 2;
+      var nextlevel = new Set();
+      for (var treeset of D[D.length - 1]) {
+        console.log(treeset);
+        if (treeset.val.size == 1) {
+          continue;
+        }
+        var S = new Set(treeset.val);
+        var toAdd = new Set();
+        for (var j = 0; j < numPoints; j++) {
+          var b = intersection(ball(points, j, rad), S);
+          if (b.size > 0) {
+            circles.push([j, rad]);
+            var c = new Tree(b);
+            nextlevel.add(c);
+            toAdd.add(c);
+          }
+          for (var point of b) {
+            S.delete(point);
+          }
+        }
+        for (var toAddTreeSet of toAdd) {
+          treeset.branches.push(toAddTreeSet);
+        }
+      }
+      D.push(nextlevel);
+      i--;
+    }
+    console.log(D);
 
     // prims
     // var visited = [];
@@ -99,27 +192,28 @@ function main() {
     //     }
     //   }
     // }
-    //kruskals
-    var sets = [];
-    var edges = [];
-    var mst = [];
-    for (var i = 0; i < numPoints; i++) {
-      sets.push(new DisjointSet());
-      for (var j = i + 1; j < numPoints; j++) {
-        edges.push([i, j, l2dist(points[i], points[j])]);
-      }
-    }
 
-    edges.sort(function (a, b) { return a[2] - b[2]; });
-    for (var i = 0; i < edges.length; i++) {
-      if (sets[edges[i][0]].find() !== sets[edges[i][1]].find()) {
-        mst.push(edges[i]);
-        if (mst.length == numPoints - 1) {
-          break;
-        }
-        sets[edges[i][0]].union(sets[edges[i][1]]);
-      }
-    }
+    //kruskals
+    // var sets = [];
+    // var edges = [];
+    // var mst = [];
+    // for (var i = 0; i < numPoints; i++) {
+    //   sets.push(new DisjointSet());
+    //   for (var j = i + 1; j < numPoints; j++) {
+    //     edges.push([i, j, l2dist(points[i], points[j])]);
+    //   }
+    // }
+
+    // edges.sort(function (a, b) { return a[2] - b[2]; });
+    // for (var i = 0; i < edges.length; i++) {
+    //   if (sets[edges[i][0]].find() !== sets[edges[i][1]].find()) {
+    //     mst.push(edges[i]);
+    //     if (mst.length == numPoints - 1) {
+    //       break;
+    //     }
+    //     sets[edges[i][0]].union(sets[edges[i][1]]);
+    //   }
+    // }
 
     for (var i = 0; i < numPoints; i++) {
       ctx.beginPath();
@@ -149,11 +243,17 @@ function main() {
       }
       drawLine();
     } else {
-      for (var i = 0; i < numPoints; i++) {
+      // for (var i = 0; i < numPoints; i++) {
+      //   ctx.beginPath();
+      //   ctx.moveTo(points[mst[i][0]][0], points[mst[i][0]][1]);
+      //   ctx.lineTo(points[mst[i][1]][0], points[mst[i][1]][1]);
+      //   ctx.closePath();
+      //   ctx.stroke();
+      // }
+      console.log("circles: " + circles.length);
+      for (var i = 0; i < circles.length; i++) {
         ctx.beginPath();
-        ctx.moveTo(points[mst[i][0]][0], points[mst[i][0]][1]);
-        ctx.lineTo(points[mst[i][1]][0], points[mst[i][1]][1]);
-        ctx.closePath();
+        ctx.arc(points[circles[i][0]][0], points[circles[i][0]][1], circles[i][1], 0, 2 * Math.PI, false);
         ctx.stroke();
       }
     }
