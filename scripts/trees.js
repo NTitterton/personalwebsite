@@ -51,7 +51,7 @@ function main() {
     var width = 500;
     var height = 500;
     var numPoints = 100;
-    var delay = 0;
+    var delay = 40;
     var points = [];
     for (var i = 0; i < numPoints; i++) {
       points.push([Math.floor(Math.random() * width), Math.floor(Math.random() * height)]);
@@ -187,17 +187,20 @@ function main() {
     // ctx.fillStyle = "rgb(255, 0, 0, 0.75)";
     // ctx.arc(points[start][0], points[start][1], 3, 0, 2 * Math.PI, false);
 
+    console.log("circles: " + circles.length);
     if (delay > 0) {
       var i = 0;
       function drawLine () {
         setTimeout(function () {
           ctx.beginPath();
-          ctx.moveTo(points[mst[i][0]][0], points[mst[i][0]][1]);
-          ctx.lineTo(points[mst[i][1]][0], points[mst[i][1]][1]);
-          ctx.closePath();
+          // ctx.moveTo(points[mst[i][0]][0], points[mst[i][0]][1]);
+          // ctx.lineTo(points[mst[i][1]][0], points[mst[i][1]][1]);
+          // ctx.closePath();
+          ctx.arc(points[circles[i][0]][0], points[circles[i][0]][1], circles[i][1], 0, 2 * Math.PI, false);
           ctx.stroke();
           i++;
-          if (i < mst.length) {
+          // if (i < mst.length) {
+          if (i < circles.length) {
             drawLine();
           }
         }, delay);
@@ -211,7 +214,6 @@ function main() {
       //   ctx.closePath();
       //   ctx.stroke();
       // }
-      console.log("circles: " + circles.length);
       for (var i = 0; i < circles.length; i++) {
         ctx.beginPath();
         ctx.arc(points[circles[i][0]][0], points[circles[i][0]][1], circles[i][1], 0, 2 * Math.PI, false);
