@@ -33,9 +33,22 @@ function singletons(s) {
 }
 
 class Tree {
-  constructor(val) {
+  constructor(val, loc, rad) {
     this.val = val;
+    this.loc = loc;
+    this.rad = rad;
+    this.parent = null;
+    this.visited = false;
+    this.prev = null;
     this.branches = [];
+  }
+
+  resetVisited() {
+    this.visited = false;
+    this.prev = null;
+    for (var t of this.branches) {
+      t.resetVisited();
+    }
   }
 }
 
@@ -50,8 +63,8 @@ function main() {
     ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
     var width = 500;
     var height = 500;
-    var numPoints = 100;
-    var delay = 40;
+    var numPoints = 128;
+    var delay = 1;
     var points = [];
     for (var i = 0; i < numPoints; i++) {
       points.push([Math.floor(Math.random() * width), Math.floor(Math.random() * height)]);
@@ -74,12 +87,13 @@ function main() {
       i++;
     }
     var beta = 0.5 + (Math.random() / 2);
+    var rad = beta * toprad;
     var D = [];
     var circles = [];
+    var leaves = [];
     D.push(new Set());
-    var root = new Tree(new Set([...Array(numPoints).keys()]));
+    var root = new Tree(new Set([...Array(numPoints).keys()]), 0, rad);
     D[0].add(root);
-    var rad = beta * toprad;
     circles.push([0, rad]);
     while (i > 0 && !singletons(D[D.length - 1])) {
       console.log("i: " + i);
@@ -87,8 +101,8 @@ function main() {
       rad /= 2;
       var nextlevel = new Set();
       for (var treeset of D[D.length - 1]) {
-        console.log(treeset);
         if (treeset.val.size == 1) {
+          leaves.push(treeset)
           continue;
         }
         var S = new Set(treeset.val);
@@ -97,7 +111,8 @@ function main() {
           var b = intersection(ball(points, j, rad), S);
           if (b.size > 0) {
             circles.push([j, rad]);
-            var c = new Tree(b);
+            var c = new Tree(b, j, rad);
+            c.parent = treeset;
             nextlevel.add(c);
             toAdd.add(c);
           }
@@ -112,7 +127,35 @@ function main() {
       D.push(nextlevel);
       i--;
     }
+    if (i == 0) {
+      for (var t of D[D.length - 1]) {
+        leaves.push(t);
+      }
+    }
     console.log(D);
+
+    // now we find out which pair of nodes has the worst distortion with n runs of DFS
+    for (var leaf of leaves) {
+      // var fringe = [[leaf, 0]];
+      // var dists = [];
+      // for (int i = 0; i < numPoints; i++) {
+      //   dists.push(Infinity);
+      // }
+      // dists[leaf.val.values()[0]] = 0;
+      // while (fringe.length > 0) {
+      //   var x = fringe.pop();
+      //   var u = x[0];
+      //   u.visited = true;
+      //   var d = x[1];
+      //   if (u.parent != null && !u.parent.visited) {
+      //     fringe.push([u.parent, d + l2dist(points[u.loc], points[u.parent.loc])]);
+      //   }
+      //   for (var child of u.branches) {
+      //     fringe.push([child, d + l2dist(points[u.loc], points[child.loc])]);
+      //     if 
+      //   }
+      // }
+    }
 
     // prims
     // var visited = [];
