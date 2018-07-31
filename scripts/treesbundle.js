@@ -102,12 +102,26 @@ function main() {
     ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
     var width = 500;
     var height = 500;
-    var numPoints = 20;
+    var numPoints = 128;
     var delay = 0;
     var points = [];
-    for (var i = 0; i < numPoints; i++) {
-      points.push([Math.floor(Math.random() * width), Math.floor(Math.random() * height)]);
+    var pointSet = new Set();
+    var i = 0;
+    while (points.length < numPoints) {
+      var x = Math.floor(Math.random() * width);
+      var y = Math.floor(Math.random() * height);
+      if (width <= height) { // could be moved out of the loop for speed reasons but this is cleaner
+        var candidate = (y * height) + x;
+      } else {
+        var candidate = (x * width) + y;
+      }
+      if (!pointSet.has(candidate)) {
+        pointSet.add(candidate);
+        points.push([x, y]);
+      }
+      i++;
     }
+    console.log(i);
     console.log(points);
 
     // FRT
@@ -120,52 +134,96 @@ function main() {
         }
       }
     }
+    console.log(maxdist);
     var toprad = 2;
     var i = 0;
     while (toprad < 2 * maxdist) {
       toprad *= 2;
       i++;
     }
+    console.log(i);
     var beta = 0.5 + (Math.random() / 2);
     var rad = beta * toprad;
     var D = [];
     var circles = [];
     var leaves = [];
+    var currlocs = {};
     D.push(new Set());
     var root = new Tree(new Set([...Array(numPoints).keys()]), 0, rad);
     D[0].add(root);
+    for (var i = 0; i < numPoints; i++) {
+      currlocs[i] = root;
+    }
     circles.push([0, rad]);
     while (i > 0 && !singletons(D[D.length - 1])) {
-      console.log("i: " + i);
-      console.log("rad: " + rad)
+      // console.log("i: " + i);
+      // console.log("rad: " + rad)
       rad /= 2;
       var nextlevel = new Set();
-      for (var treeset of D[D.length - 1]) {
-        if (treeset.val.size == 1) {
-          continue;
-        }
-        var S = new Set(treeset.val);
-        var toAdd = new Set();
-        for (var j = 0; j < numPoints; j++) {
-          var b = intersection(ball(points, j, rad), S);
-          if (b.size > 0) {
-            circles.push([j, rad]); // since the same circle can intersect multiple different parent circles, there are some duplicate circles. Fixing this brings the runtime to O(n^2)-ish, but finding the distortion is O(n^3) anyway so I'm not going to go with the fancy implementation.
-            var c = new Tree(b, j, rad);
-            if (c.val.size == 1) {
-              leaves.push(c);
-            }
-            c.parent = treeset;
-            nextlevel.add(c);
-            toAdd.add(c);
+      // for (var treeset of D[D.length - 1]) {
+      //   if (treeset.val.size == 1) {
+      //     continue;
+      //   }
+      //   var S = new Set(treeset.val);
+      //   var toAdd = new Set();
+      //   for (var j = 0; j < numPoints; j++) {
+      //     var b = intersection(ball(points, j, rad), S);
+      //     if (b.size > 0) {
+      //       circles.push([j, rad]); // since the same circle can intersect multiple different parent circles, there are some duplicate circles. Fixing this brings the runtime to O(n^2)-ish, but finding the distortion is O(n^3) anyway so I'm not going to go with the fancy implementation.
+      //       var c = new Tree(b, j, rad);
+      //       if (c.val.size == 1) {
+      //         leaves.push(c);
+      //       }
+      //       c.parent = treeset;
+      //       nextlevel.add(c);
+      //       toAdd.add(c);
+      //     }
+      //     for (var point of b) {
+      //       S.delete(point);
+      //     }
+      //   }
+      //   for (var toAddTreeSet of toAdd) {
+      //     treeset.branches.push(toAddTreeSet);
+      //   }
+      // }
+      var nextcurrlocs = {};
+      for (var j = 0; j < numPoints; j++) {
+        var b = intersection(ball(points, j, rad), root.val);
+        var jchildren = {};
+        for (var treeset of D[D.length - 1]) {
+          if (treeset.size == 1) {
+            continue;
           }
-          for (var point of b) {
-            S.delete(point);
+          jchildren[treeset] = null;
+        }
+        var drawcircle = false;
+        for (var point of b) {
+          if (!(point in currlocs) || currlocs[point].val.size == 1 || point in nextcurrlocs) { // point wasnt in prev level or was in a leaf node or is already taken
+            continue;
+          }
+          if (jchildren[currlocs[point]] == null) { // point is unclaimed and no child exists. 
+            drawcircle = true;
+            var child = new Tree(new Set([point]), j, rad);
+            jchildren[currlocs[point]] = child;
+            nextlevel.add(child);
+            nextcurrlocs[point] = child;
+            currlocs[point].branches.push(child);
+            child.parent = currlocs[point];
+          } else { // point is unclaimed but a child already exists
+            nextcurrlocs[point] = jchildren[currlocs[point]];
+            nextcurrlocs[point].val.add(point);
           }
         }
-        for (var toAddTreeSet of toAdd) {
-          treeset.branches.push(toAddTreeSet);
+        if (drawcircle) {
+          circles.push([j, rad]);
         }
       }
+      for (var treeset of nextlevel) {
+        if (treeset.val.size == 1) {
+          leaves.push(treeset);
+        }
+      }
+      currlocs = nextcurrlocs;
       D.push(nextlevel);
       i--;
     }
@@ -234,7 +292,6 @@ function main() {
       }
     }
 
-    console.log(s, t, path);
     path.push([t.val.values().next().value, t.loc]);
     while (t != s) {
       path.push([t.loc, t.prev.loc]);
