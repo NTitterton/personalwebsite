@@ -63,12 +63,13 @@ function main() {
     ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
     var width = 500;
     var height = 500;
-    var numPoints = 128;
-    var delay = 1;
+    var numPoints = 20;
+    var delay = 0;
     var points = [];
     for (var i = 0; i < numPoints; i++) {
       points.push([Math.floor(Math.random() * width), Math.floor(Math.random() * height)]);
     }
+    console.log(points);
 
     // FRT
     var maxdist = 0;
@@ -102,7 +103,6 @@ function main() {
       var nextlevel = new Set();
       for (var treeset of D[D.length - 1]) {
         if (treeset.val.size == 1) {
-          leaves.push(treeset)
           continue;
         }
         var S = new Set(treeset.val);
@@ -110,8 +110,11 @@ function main() {
         for (var j = 0; j < numPoints; j++) {
           var b = intersection(ball(points, j, rad), S);
           if (b.size > 0) {
-            circles.push([j, rad]);
+            circles.push([j, rad]); // since the same circle can intersect multiple different parent circles, there are some duplicate circles. Fixing this brings the runtime to O(n^2)-ish, but finding the distortion is O(n^3) anyway so I'm not going to go with the fancy implementation.
             var c = new Tree(b, j, rad);
+            if (c.val.size == 1) {
+              leaves.push(c);
+            }
             c.parent = treeset;
             nextlevel.add(c);
             toAdd.add(c);
@@ -135,27 +138,71 @@ function main() {
     console.log(D);
 
     // now we find out which pair of nodes has the worst distortion with n runs of DFS
+    var max = 1;
+    var argmax = [-1, -1];
+    var totaldistortion = 0;
+    var path = [];
     for (var leaf of leaves) {
-      // var fringe = [[leaf, 0]];
-      // var dists = [];
-      // for (int i = 0; i < numPoints; i++) {
-      //   dists.push(Infinity);
-      // }
-      // dists[leaf.val.values()[0]] = 0;
-      // while (fringe.length > 0) {
-      //   var x = fringe.pop();
-      //   var u = x[0];
-      //   u.visited = true;
-      //   var d = x[1];
-      //   if (u.parent != null && !u.parent.visited) {
-      //     fringe.push([u.parent, d + l2dist(points[u.loc], points[u.parent.loc])]);
-      //   }
-      //   for (var child of u.branches) {
-      //     fringe.push([child, d + l2dist(points[u.loc], points[child.loc])]);
-      //     if 
-      //   }
-      // }
+      var fringe = [[leaf, l2dist(points[leaf.val.values().next().value], points[leaf.loc])]];
+      while (fringe.length > 0) {
+        var x = fringe.pop();
+        var u = x[0];
+        u.visited = true;
+        var d = x[1];
+        if (u.val.size == 1 && u.val.values().next().value != leaf.val.values().next().value) {
+          var uvdistortion = (d + l2dist(points[u.val.values().next().value], points[u.loc])) / l2dist(points[u.val.values().next().value], points[leaf.val.values().next().value]);
+          totaldistortion += uvdistortion;
+          if (uvdistortion > max) {
+            max = uvdistortion;
+            argmax = [leaf, u];
+          }
+        }
+        if (u.parent != null && !u.parent.visited) {
+          u.parent.prev = u;
+          fringe.push([u.parent, d + l2dist(points[u.loc], points[u.parent.loc])]);
+        }
+        for (var child of u.branches) {
+          if (!child.visited) {
+            child.prev = u;
+            var newdist = d + l2dist(points[u.loc], points[child.loc]);
+            fringe.push([child, newdist]);
+          }
+        }
+      }
+      root.resetVisited();
     }
+
+    console.log("average distortion: " + totaldistortion/(numPoints * numPoints - numPoints));
+    console.log("worst case distortion: " + max);
+    var t = argmax[0];
+    var s = argmax[1];
+    var fringe = [s];
+    while (fringe.length > 0) {
+      var u = fringe.pop();
+      if (u == t) {
+        break;
+      }
+      u.visited = true;
+      if (u.parent != null && !u.parent.visited) {
+        u.parent.prev = u;
+        fringe.push(u.parent);
+      }
+      for (var child of u.branches) {
+        if (!child.visited) {
+          child.prev = u;
+          fringe.push(child);
+        }
+      }
+    }
+
+    console.log(s, t, path);
+    path.push([t.val.values().next().value, t.loc]);
+    while (t != s) {
+      path.push([t.loc, t.prev.loc]);
+      t = t.prev;
+    }
+    path.push([s.loc, s.val.values().next().value])
+    console.log(path);
 
     // prims
     // var visited = [];
@@ -262,6 +309,19 @@ function main() {
         ctx.arc(points[circles[i][0]][0], points[circles[i][0]][1], circles[i][1], 0, 2 * Math.PI, false);
         ctx.stroke();
       }
+      ctx.strokeStyle = "rgb(255, 0, 0, 0.75)";
+      for (var i = 0; i < path.length; i++) {
+        ctx.beginPath();
+        ctx.moveTo(points[path[i][0]][0], points[path[i][0]][1]);
+        ctx.lineTo(points[path[i][1]][0], points[path[i][1]][1]);
+        ctx.stroke();
+      }
+      console.log("worst-case vertices: " + argmax[0].val.values().next().value + " " + argmax[1].val.values().next().value);
+      ctx.strokeStyle = "rgb(0, 255, 0, 0.75)";
+      ctx.beginPath();
+      ctx.moveTo(points[argmax[0].val.values().next().value][0], points[argmax[0].val.values().next().value][1]);
+      ctx.lineTo(points[argmax[1].val.values().next().value][0], points[argmax[1].val.values().next().value][1]);
+      ctx.stroke();
     }
   }
   // Only continue if WebGL is available and working
