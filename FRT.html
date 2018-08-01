@@ -38,7 +38,14 @@
       <div class="row justify-content-center mt-3">
         <div class="col-9"><div id="trees_container"></div>
           <!-- WebGL stuff goes here -->
-          <canvas id="glCanvas" width="500" height="500"></canvas>
+          <canvas id="canvas" width="500" height="500"></canvas>
+          <form>
+            <label>
+              Number of Points:
+              <input type="text" name="n" />
+            </label>
+            <input type="submit" value="Go!" onclick="main(n)" />
+          </form>
         </div>
       </div>
     </div>
