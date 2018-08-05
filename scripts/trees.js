@@ -1,5 +1,3 @@
-var DisjointSet = require("../modules/ngraph.disjoint-set");
-
 function l2dist(a, b) { return Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])); }
 
 function intersection(setA, setB) { // taken from Mozilla at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
@@ -31,6 +29,15 @@ function singletons(s) {
   return true;
 }
 
+function printList(arr) {
+  var toPrint = "[";
+  for (var i = 0; i < arr.length - 1; i++) {
+    toPrint += arr[i] + ", ";
+  }
+  toPrint += arr[arr.length - 1] + "]";
+  return toPrint
+}
+
 class Tree {
   constructor(val, loc, rad) {
     this.val = val;
@@ -47,6 +54,39 @@ class Tree {
     this.prev = null;
     for (var t of this.branches) {
       t.resetVisited();
+    }
+  }
+}
+
+class DisjointSet {
+  constructor(numPoints) {
+    this.elems = [];
+    this.heights = [];
+    for (var i = 0; i < numPoints; i++) {
+      this.elems.push(i);
+      this.heights.push(1);
+    }
+  }
+
+  find(elem) {
+    if (this.elems[elem] == elem) {
+      return elem;
+    }
+    var root = this.find(this.elems[elem]);
+    this.elems[elem] = root; // this is the path compression
+    return root;
+  }
+
+  union(elem1, elem2) {
+    var a = this.find(elem1);
+    var b = this.find(elem2);
+    if (this.heights[a] < this.heights[b]) {
+      this.elems[a] = b;
+    } else if (this.heights[a] > this.heights[b]) {
+      this.elems[b] = a;
+    } else {
+      this.elems[b] = a;
+      this.heights[a] += 1;
     }
   }
 }
@@ -192,23 +232,26 @@ function Prims(points) {
 }
 
 function Kruskals(points) {
-  var sets = [];
+  var sets = new DisjointSet(points.length);
+  // var sets = [];
   var edges = [];
   var mst = [];
   for (var i = 0; i < points.length; i++) {
-    sets.push(new DisjointSet());
+    // sets.push(new DisjointSet());
     for (var j = i + 1; j < points.length; j++) {
       edges.push([i, j, l2dist(points[i], points[j])]);
     }
   }
   edges.sort(function (a, b) { return a[2] - b[2]; });
   for (var i = 0; i < edges.length; i++) {
-    if (sets[edges[i][0]].find() !== sets[edges[i][1]].find()) {
+    // if (sets[edges[i][0]].find() !== sets[edges[i][1]].find()) {
+    if (sets.find(edges[i][0]) != sets.find(edges[i][1])) {
       mst.push(edges[i]);
       if (mst.length == points.length - 1) {
         break;
       }
-      sets[edges[i][0]].union(sets[edges[i][1]]);
+      // sets[edges[i][0]].union(sets[edges[i][1]]);
+      sets.union(edges[i][0], edges[i][1]);
     }
   }
   console.log(mst);
@@ -279,7 +322,8 @@ function calculateDistortion(points, args, isFRT) {
       }
       root.resetVisited();
     }
-    console.log("average distortion: " + totaldistortion/((points.length * points.length) - points.length));
+    var avg = totaldistortion/((points.length * points.length) - points.length);
+    console.log("average distortion: " + avg);
     console.log("worst case distortion: " + max);
     var t = argmax[0];
     var s = argmax[1];
@@ -347,9 +391,9 @@ function calculateDistortion(points, args, isFRT) {
         }
       }
     }
-    console.log("average distortion: " + totaldistortion/((points.length * points.length) - points.length));
+    var avg = totaldistortion/((points.length * points.length) - points.length);
+    console.log("average distortion: " + avg);
     console.log("worst case distortion: " + max);
-    console.log(argmax);
     var t = argmax[0];
     var s = argmax[1];
     var fringe = [s];
@@ -378,7 +422,7 @@ function calculateDistortion(points, args, isFRT) {
     }
   }
   console.log(path);
-  return [argmax, path];
+  return [argmax, path, avg, max];
 }
 
 function main() {
@@ -392,9 +436,9 @@ function main() {
     ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
     var width = 500;
     var height = 500;
-    var numPoints = 100;
-    var treeType = "frt";
-    var delay = 30;
+    var numPoints = 2000;
+    var treeType = "kruskals";
+    var delay = 0;
     var points = generatePoints(width, height, numPoints);
     console.log(points);
 
@@ -425,6 +469,66 @@ function main() {
     }
     var argmax = distortion[0];
     var path = distortion[1];
+
+    // var z = 4;
+    // var frtAvgDistortion = [];
+    // var mstAvgDistortion = [];
+    // var randAvgDistortion = [];
+    // var frtMaxDistortion = [];
+    // var mstMaxDistortion = [];
+    // var randMaxDistortion = [];
+    // var iterations = 100;
+    // while (z < 10000) {
+    //   console.log("z: " + z);
+    //   var frtAvg = [];
+    //   var mstAvg = [];
+    //   var randAvg = [];
+    //   var frtMax = [];
+    //   var mstMax = [];
+    //   var randMax = [];
+    //   for (var y = 0; y < iterations; y++) {
+    //     var p = generatePoints(width, height, z);
+    //     var frt = FRT(p);
+    //     var leaves = frt[2];
+    //     var root = frt[0][0].values().next().value;
+    //     var frtdistortion = calculateDistortion(p, [leaves, root], true);
+    //     var mst = Prims(p)[0];
+    //     var mstdistortion = calculateDistortion(p, mst, false);
+    //     var rand = randomTree(p);
+    //     var randdistortion = calculateDistortion(p, rand, false);
+    //     frtAvg.push(frtdistortion[2]);
+    //     frtMax.push(frtdistortion[3]);
+    //     mstAvg.push(mstdistortion[2]);
+    //     mstMax.push(mstdistortion[3]);
+    //     randAvg.push(randdistortion[2]);
+    //     randMax.push(randdistortion[3]);
+    //   }
+    //   console.log(printList(frtAvg));
+    //   console.log(printList(frtMax));
+    //   console.log(printList(mstAvg));
+    //   console.log(printList(mstMax));
+    //   console.log(printList(randAvg));
+    //   console.log(printList(randMax));
+    //   frtAvgDistortion.push(frtAvg.reduce((a, b) => a + b) / iterations);
+    //   frtMaxDistortion.push(frtMax.reduce((a, b) => a + b) / iterations);
+    //   mstAvgDistortion.push(mstAvg.reduce((a, b) => a + b) / iterations);
+    //   mstMaxDistortion.push(mstMax.reduce((a, b) => a + b) / iterations);
+    //   randAvgDistortion.push(randAvg.reduce((a, b) => a + b) / iterations);
+    //   randMaxDistortion.push(randMax.reduce((a, b) => a + b) / iterations);
+    //   z *= 2;
+    // }
+    // console.log("FRT avg:");
+    // console.log(printList(frtAvgDistortion));
+    // console.log("FRT max:");
+    // console.log(printList(frtMaxDistortion));
+    // console.log("MST avg:");
+    // console.log(printList(mstAvgDistortion));
+    // console.log("MST max:");
+    // console.log(printList(mstMaxDistortion));
+    // console.log("random avg:");
+    // console.log(printList(randAvgDistortion));
+    // console.log("random max:");
+    // console.log(printList(randMaxDistortion));
 
     if (delay > 0) {
       // if (treeType == "prims") { // fix later

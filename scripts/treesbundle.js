@@ -70,6 +70,15 @@ function singletons(s) {
   return true;
 }
 
+function printList(arr) {
+  var toPrint = "[";
+  for (var i = 0; i < arr.length - 1; i++) {
+    toPrint += arr[i] + ", ";
+  }
+  toPrint += arr[arr.length - 1] + "]";
+  return toPrint
+}
+
 class Tree {
   constructor(val, loc, rad) {
     this.val = val;
@@ -318,7 +327,8 @@ function calculateDistortion(points, args, isFRT) {
       }
       root.resetVisited();
     }
-    console.log("average distortion: " + totaldistortion/((points.length * points.length) - points.length));
+    var avg = totaldistortion/((points.length * points.length) - points.length);
+    console.log("average distortion: " + avg);
     console.log("worst case distortion: " + max);
     var t = argmax[0];
     var s = argmax[1];
@@ -386,9 +396,9 @@ function calculateDistortion(points, args, isFRT) {
         }
       }
     }
-    console.log("average distortion: " + totaldistortion/((points.length * points.length) - points.length));
+    var avg = totaldistortion/((points.length * points.length) - points.length);
+    console.log("average distortion: " + avg);
     console.log("worst case distortion: " + max);
-    console.log(argmax);
     var t = argmax[0];
     var s = argmax[1];
     var fringe = [s];
@@ -417,7 +427,7 @@ function calculateDistortion(points, args, isFRT) {
     }
   }
   console.log(path);
-  return [argmax, path];
+  return [argmax, path, avg, max];
 }
 
 function main() {
@@ -431,9 +441,9 @@ function main() {
     ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
     var width = 500;
     var height = 500;
-    var numPoints = 100;
+    var numPoints = 8;
     var treeType = "random";
-    var delay = 30;
+    var delay = 0;
     var points = generatePoints(width, height, numPoints);
     console.log(points);
 
@@ -464,6 +474,66 @@ function main() {
     }
     var argmax = distortion[0];
     var path = distortion[1];
+
+    // var z = 4;
+    // var frtAvgDistortion = [];
+    // var mstAvgDistortion = [];
+    // var randAvgDistortion = [];
+    // var frtMaxDistortion = [];
+    // var mstMaxDistortion = [];
+    // var randMaxDistortion = [];
+    // var iterations = 100;
+    // while (z < 10000) {
+    //   console.log("z: " + z);
+    //   var frtAvg = [];
+    //   var mstAvg = [];
+    //   var randAvg = [];
+    //   var frtMax = [];
+    //   var mstMax = [];
+    //   var randMax = [];
+    //   for (var y = 0; y < iterations; y++) {
+    //     var p = generatePoints(width, height, z);
+    //     var frt = FRT(p);
+    //     var leaves = frt[2];
+    //     var root = frt[0][0].values().next().value;
+    //     var frtdistortion = calculateDistortion(p, [leaves, root], true);
+    //     var mst = Prims(p)[0];
+    //     var mstdistortion = calculateDistortion(p, mst, false);
+    //     var rand = randomTree(p);
+    //     var randdistortion = calculateDistortion(p, rand, false);
+    //     frtAvg.push(frtdistortion[2]);
+    //     frtMax.push(frtdistortion[3]);
+    //     mstAvg.push(mstdistortion[2]);
+    //     mstMax.push(mstdistortion[3]);
+    //     randAvg.push(randdistortion[2]);
+    //     randMax.push(randdistortion[3]);
+    //   }
+    //   console.log(printList(frtAvg));
+    //   console.log(printList(frtMax));
+    //   console.log(printList(mstAvg));
+    //   console.log(printList(mstMax));
+    //   console.log(printList(randAvg));
+    //   console.log(printList(randMax));
+    //   frtAvgDistortion.push(frtAvg.reduce((a, b) => a + b) / iterations);
+    //   frtMaxDistortion.push(frtMax.reduce((a, b) => a + b) / iterations);
+    //   mstAvgDistortion.push(mstAvg.reduce((a, b) => a + b) / iterations);
+    //   mstMaxDistortion.push(mstMax.reduce((a, b) => a + b) / iterations);
+    //   randAvgDistortion.push(randAvg.reduce((a, b) => a + b) / iterations);
+    //   randMaxDistortion.push(randMax.reduce((a, b) => a + b) / iterations);
+    //   z *= 2;
+    // }
+    // console.log("FRT avg:");
+    // console.log(printList(frtAvgDistortion));
+    // console.log("FRT max:");
+    // console.log(printList(frtMaxDistortion));
+    // console.log("MST avg:");
+    // console.log(printList(mstAvgDistortion));
+    // console.log("MST max:");
+    // console.log(printList(mstMaxDistortion));
+    // console.log("random avg:");
+    // console.log(printList(randAvgDistortion));
+    // console.log("random max:");
+    // console.log(printList(randMaxDistortion));
 
     if (delay > 0) {
       // if (treeType == "prims") { // fix later
