@@ -5,14 +5,15 @@ const e = React.createElement;
 class LikeButton extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { liked: false };
+    this.state = { liked: false
+    };
   }
 
   render() {
     if (this.state.liked) {
       return 'You liked this.';
     }
-
+    return e('canvas', {width: 500, height: 500}, null);
     return e(
       'button',
       { onClick: () => this.setState({ liked: true }) },
@@ -21,10 +22,79 @@ class LikeButton extends React.Component {
   }
 }
 
-const domContainer = document.querySelector('#like_button_container');
-ReactDOM.render(e(LikeButton), domContainer);
+class App extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			canvasWidth: props.width,
+			canvasHeight: props.height,
+			numPoints: props.numPoints,
+			points: props.points,
+			treeType: props.treeType,
+			tree: props.tree,
+			distortionPath: props.distortionPath
+		};
+		this.canvas = e('canvas', {width: props.width, height: props.height}, null);
+		this.pointsGUI = 
+			e('label', null,
+				'Number of points:',
+				e('input', {type:"text"}),
+				e('input', {type:"submit", value:"Generate"})
+			);
+		this.treeGUI =
+			e('label', null,
+				'Tree type: ',
+				e('label', null,
+					e('input', {type:'radio', value:'frt', name:"treeType"}),
+					'Fakcharoenphol-Rao-Talwar'
+				),
+				e('label', null,
+					e('input', {type:'radio', value:'prims', name:"treeType"}),
+					"Prim's"
+				),
+				e('label', null,
+					e('input', {type:'radio', value:'kruskals', name:"treeType"}),
+					"Kruskal's"
+				),
+				e('label', null,
+					e('input', {type:'radio', value:'random', name:"treeType"}),
+					'Random'
+				),
+				e('input', {type:"submit", value:"Create"})
+			);
+		this.distortionGUI = 
+			e('label', null,
+				'Distortion: ',
+				e('label', null,
+					e('input', {type:'radio', value:'worstcase', name:"distortionType"}),
+					'Worst-Case'
+				),
+				e('label', null,
+					e('input', {type:'radio', value:'random', name:"distortionType"}),
+					"Random"
+				),
+				e('input', {type:"submit", value:"Find"})
+			);
+	}
 
-// var DisjointSet = require("../modules/ngraph.disjoint-set");
+	genAndDrawPoints() {
+
+	}
+
+	render() {
+		return e('div', null,
+			this.canvas,
+			this.pointsGUI,
+			e('br'),
+			this.treeGUI,
+			e('br'),
+			this.distortionGUI
+		);
+	}
+}
+
+const domContainer = document.querySelector('#root');
+ReactDOM.render(e(App, {width:500, height:500, numPoints:null, points:null, treeType:"frt", tree:null, distortionPath:null}), domContainer);
 
 function l2dist(a, b) { return Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])); }
 
@@ -57,6 +127,15 @@ function singletons(s) {
   return true;
 }
 
+function printList(arr) {
+  var toPrint = "[";
+  for (var i = 0; i < arr.length - 1; i++) {
+    toPrint += arr[i] + ", ";
+  }
+  toPrint += arr[arr.length - 1] + "]";
+  return toPrint
+}
+
 class Tree {
   constructor(val, loc, rad) {
     this.val = val;
@@ -73,6 +152,39 @@ class Tree {
     this.prev = null;
     for (var t of this.branches) {
       t.resetVisited();
+    }
+  }
+}
+
+class DisjointSet {
+  constructor(numPoints) {
+    this.elems = [];
+    this.heights = [];
+    for (var i = 0; i < numPoints; i++) {
+      this.elems.push(i);
+      this.heights.push(1);
+    }
+  }
+
+  find(elem) {
+    if (this.elems[elem] == elem) {
+      return elem;
+    }
+    var root = this.find(this.elems[elem]);
+    this.elems[elem] = root; // this is the path compression
+    return root;
+  }
+
+  union(elem1, elem2) {
+    var a = this.find(elem1);
+    var b = this.find(elem2);
+    if (this.heights[a] < this.heights[b]) {
+      this.elems[a] = b;
+    } else if (this.heights[a] > this.heights[b]) {
+      this.elems[b] = a;
+    } else {
+      this.elems[b] = a;
+      this.heights[a] += 1;
     }
   }
 }
@@ -218,23 +330,22 @@ function Prims(points) {
 }
 
 function Kruskals(points) {
-  var sets = [];
+  var sets = new DisjointSet(points.length);
   var edges = [];
   var mst = [];
   for (var i = 0; i < points.length; i++) {
-    sets.push(new DisjointSet());
     for (var j = i + 1; j < points.length; j++) {
       edges.push([i, j, l2dist(points[i], points[j])]);
     }
   }
   edges.sort(function (a, b) { return a[2] - b[2]; });
   for (var i = 0; i < edges.length; i++) {
-    if (sets[edges[i][0]].find() !== sets[edges[i][1]].find()) {
+    if (sets.find(edges[i][0]) != sets.find(edges[i][1])) {
       mst.push(edges[i]);
       if (mst.length == points.length - 1) {
         break;
       }
-      sets[edges[i][0]].union(sets[edges[i][1]]);
+      sets.union(edges[i][0], edges[i][1]);
     }
   }
   console.log(mst);
@@ -305,7 +416,8 @@ function calculateDistortion(points, args, isFRT) {
       }
       root.resetVisited();
     }
-    console.log("average distortion: " + totaldistortion/((points.length * points.length) - points.length));
+    var avg = totaldistortion/((points.length * points.length) - points.length);
+    console.log("average distortion: " + avg);
     console.log("worst case distortion: " + max);
     var t = argmax[0];
     var s = argmax[1];
@@ -373,9 +485,9 @@ function calculateDistortion(points, args, isFRT) {
         }
       }
     }
-    console.log("average distortion: " + totaldistortion/((points.length * points.length) - points.length));
+    var avg = totaldistortion/((points.length * points.length) - points.length);
+    console.log("average distortion: " + avg);
     console.log("worst case distortion: " + max);
-    console.log(argmax);
     var t = argmax[0];
     var s = argmax[1];
     var fringe = [s];
@@ -404,13 +516,10 @@ function calculateDistortion(points, args, isFRT) {
     }
   }
   console.log(path);
-  return [argmax, path];
+  return [argmax, path, avg, max];
 }
 
 function main() {
-  // const qcanvas = document.querySelector("#glCanvas");
-  // Initialize the GL context
-  // const gl = canvas.getContext("webgl");
   var canvas = document.getElementById('canvas');
   if (canvas.getContext) {
     var ctx = canvas.getContext('2d');
@@ -418,8 +527,8 @@ function main() {
     ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
     var width = 500;
     var height = 500;
-    var numPoints = 1000;
-    var treeType = "random";
+    var numPoints = 3;
+    var treeType = "frt";
     var delay = 0;
     var points = generatePoints(width, height, numPoints);
     console.log(points);
@@ -451,6 +560,66 @@ function main() {
     }
     var argmax = distortion[0];
     var path = distortion[1];
+
+    // var z = 4;
+    // var frtAvgDistortion = [];
+    // var mstAvgDistortion = [];
+    // var randAvgDistortion = [];
+    // var frtMaxDistortion = [];
+    // var mstMaxDistortion = [];
+    // var randMaxDistortion = [];
+    // var iterations = 100;
+    // while (z < 10000) {
+    //   console.log("z: " + z);
+    //   var frtAvg = [];
+    //   var mstAvg = [];
+    //   var randAvg = [];
+    //   var frtMax = [];
+    //   var mstMax = [];
+    //   var randMax = [];
+    //   for (var y = 0; y < iterations; y++) {
+    //     var p = generatePoints(width, height, z);
+    //     var frt = FRT(p);
+    //     var leaves = frt[2];
+    //     var root = frt[0][0].values().next().value;
+    //     var frtdistortion = calculateDistortion(p, [leaves, root], true);
+    //     var mst = Prims(p)[0];
+    //     var mstdistortion = calculateDistortion(p, mst, false);
+    //     var rand = randomTree(p);
+    //     var randdistortion = calculateDistortion(p, rand, false);
+    //     frtAvg.push(frtdistortion[2]);
+    //     frtMax.push(frtdistortion[3]);
+    //     mstAvg.push(mstdistortion[2]);
+    //     mstMax.push(mstdistortion[3]);
+    //     randAvg.push(randdistortion[2]);
+    //     randMax.push(randdistortion[3]);
+    //   }
+    //   console.log(printList(frtAvg));
+    //   console.log(printList(frtMax));
+    //   console.log(printList(mstAvg));
+    //   console.log(printList(mstMax));
+    //   console.log(printList(randAvg));
+    //   console.log(printList(randMax));
+    //   frtAvgDistortion.push(frtAvg.reduce((a, b) => a + b) / iterations);
+    //   frtMaxDistortion.push(frtMax.reduce((a, b) => a + b) / iterations);
+    //   mstAvgDistortion.push(mstAvg.reduce((a, b) => a + b) / iterations);
+    //   mstMaxDistortion.push(mstMax.reduce((a, b) => a + b) / iterations);
+    //   randAvgDistortion.push(randAvg.reduce((a, b) => a + b) / iterations);
+    //   randMaxDistortion.push(randMax.reduce((a, b) => a + b) / iterations);
+    //   z *= 2;
+    // }
+    // console.log("FRT avg:");
+    // console.log(printList(frtAvgDistortion));
+    // console.log("FRT max:");
+    // console.log(printList(frtMaxDistortion));
+    // console.log("MST avg:");
+    // console.log(printList(mstAvgDistortion));
+    // console.log("MST max:");
+    // console.log(printList(mstMaxDistortion));
+    // console.log("random avg:");
+    // console.log(printList(randAvgDistortion));
+    // console.log("random max:");
+    // console.log(printList(randMaxDistortion));
 
     if (delay > 0) {
       // if (treeType == "prims") { // fix later
@@ -528,13 +697,8 @@ function main() {
       }
     }
   }
-  // Only continue if WebGL is available and working
-  // if (!gl) {
-  //   alert("Unable to initialize WebGL. Your browser or machine may not support it.");
-  //   return;
-  // }
 }
 
-// // window.onload = function () {
-// //   main();
-// // }
+// window.onload = function () {
+//   main();
+// }

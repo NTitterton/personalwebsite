@@ -139,7 +139,7 @@ function FRT(points) {
     currlocs[i] = root;
   }
   circles.push([0, rad]);
-  while (r > 0 && !singletons(levels[levels.length - 1])) {
+  while (r >= 0 && !singletons(levels[levels.length - 1])) {
     rad /= 2;
     var nextlevel = new Set();
     var nextcurrlocs = {};
@@ -233,24 +233,20 @@ function Prims(points) {
 
 function Kruskals(points) {
   var sets = new DisjointSet(points.length);
-  // var sets = [];
   var edges = [];
   var mst = [];
   for (var i = 0; i < points.length; i++) {
-    // sets.push(new DisjointSet());
     for (var j = i + 1; j < points.length; j++) {
       edges.push([i, j, l2dist(points[i], points[j])]);
     }
   }
   edges.sort(function (a, b) { return a[2] - b[2]; });
   for (var i = 0; i < edges.length; i++) {
-    // if (sets[edges[i][0]].find() !== sets[edges[i][1]].find()) {
     if (sets.find(edges[i][0]) != sets.find(edges[i][1])) {
       mst.push(edges[i]);
       if (mst.length == points.length - 1) {
         break;
       }
-      // sets[edges[i][0]].union(sets[edges[i][1]]);
       sets.union(edges[i][0], edges[i][1]);
     }
   }
@@ -426,9 +422,6 @@ function calculateDistortion(points, args, isFRT) {
 }
 
 function main() {
-  // const qcanvas = document.querySelector("#glCanvas");
-  // Initialize the GL context
-  // const gl = canvas.getContext("webgl");
   var canvas = document.getElementById('canvas');
   if (canvas.getContext) {
     var ctx = canvas.getContext('2d');
@@ -436,9 +429,9 @@ function main() {
     ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
     var width = 500;
     var height = 500;
-    var numPoints = 2000;
-    var treeType = "kruskals";
-    var delay = 0;
+    var numPoints = 8;
+    var treeType = "frt";
+    var delay = 1000;
     var points = generatePoints(width, height, numPoints);
     console.log(points);
 
@@ -606,11 +599,6 @@ function main() {
       }
     }
   }
-  // Only continue if WebGL is available and working
-  // if (!gl) {
-  //   alert("Unable to initialize WebGL. Your browser or machine may not support it.");
-  //   return;
-  // }
 }
 
 window.onload = function () {
