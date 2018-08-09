@@ -9,11 +9,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
     <link rel="stylesheet" href="style/main.css">
 
-    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
-    <!-- <script src="trees_new.js"></script> -->
-
-    <script src="./scripts/treesbundle.js"></script>
+    <!-- <script src="./scripts/trees.js"></script> -->
     <title>Nick Titterton</title>
   </head>
   <body>
@@ -36,25 +32,33 @@
         </div>
       </div>
       <div class="row justify-content-center mt-3">
-        <div class="col-9"><div id="trees_container"></div>
-          <!-- WebGL stuff goes here -->
-          <canvas id="canvas" width="500" height="500"></canvas>
-          <form>
-            <label>
-              Number of Points:
-              <input type="text" name="n" />
-            </label>
-            <input type="submit" value="Go!" onclick="main(n)" />
-          </form>
+        <div class="col-9">
+          <div id="root">
+            <!-- <canvas id="canvas" width="500" height="500" /> -->
+            <!-- <form>
+              <label>Number of points: <input type="text" id="numPointsField" value="numPoints"/></label>
+              <input type="radio" id="treeType" value="frt">Fakcharoenphol-Rao-Talwar</input>
+              <input type="radio" id="treeType" value="prims">Prims</input>
+              <input type="radio" id="treeType" value="kruskals">Kruskals</input>
+              <input type="radio" id="treeType" value="random">Random</input>
+              <label> Delay per edge (ms): <input type="text" id="delayField" value="delay"/></label>
+              <input type="submit" value="Go!" onclick="main(n)" />
+            </form> -->
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+    <!-- React scripts -->
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="./scripts/trees_new.js"></script>
+
   </body>
 </html>
