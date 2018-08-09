@@ -12,12 +12,14 @@ class App extends React.Component {
 			points: props.points,
 			treeType: props.treeType,
 			tree: props.tree,
+			i: 0,
 			isFRT: false,
 			frtLeaves: null,
 			frtRoot: null,
 			distortionPath: props.distortionPath,
 			delay: props.delay
 		};
+		this.animateTree = this.animateTree.bind(this);
 		this.drawPoints = this.drawPoints.bind(this);
 		this.drawTree = this.drawTree.bind(this);
 		this.updateNumPoints = this.updateNumPoints.bind(this);
@@ -99,6 +101,26 @@ class App extends React.Component {
 		}
 	}
 
+	animateTree() {
+		if (this.state.i >= this.state.tree.length) {
+			for (var i = 0; i < 9999; i++) {
+				clearInterval(i);
+			}
+			return;
+		}
+		var ctx = this.refs.canvas.getContext('2d');
+    	ctx.beginPath();
+    	if (this.state.treeType == "frt") {
+        	ctx.arc(this.state.points[this.state.tree[this.state.i][0]][0], this.state.points[this.state.tree[this.state.i][0]][1], this.state.tree[this.state.i][1], 0, 2 * Math.PI, false);
+    	} else {
+        	ctx.moveTo(this.state.points[this.state.tree[this.state.i][0]][0], this.state.points[this.state.tree[this.state.i][0]][1]);
+        	ctx.lineTo(this.state.points[this.state.tree[this.state.i][1]][0], this.state.points[this.state.tree[this.state.i][1]][1]);
+        	ctx.closePath();
+    	}
+    	ctx.stroke();
+    	this.state.i += 1;
+	}
+
 	updateNumPoints(event) {
 		this.setState({currentAnimationStartTime:(new Date()).getTime()});
 		if (!isNaN(event.target.value) && (event.target.value == "" || parseInt(event.target.value, 10) >= 0)) {
@@ -157,29 +179,34 @@ class App extends React.Component {
 			this.drawPoints();
 			if (this.state.delay > 0) {
     			ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
-			    var i = 0;
-			    var delay = this.state.delay;
-			    var points = this.state.points;
-			    var tree = this.state.tree;
-			    var treeType = event.target.value;
-			    function drawLine() {
-			    	setTimeout(function () {
-			        	ctx.beginPath();
-			        	if (treeType == "frt") {
-			            	ctx.arc(points[tree[i][0]][0], points[tree[i][0]][1], tree[i][1], 0, 2 * Math.PI, false);
-			        	} else {
-			            	ctx.moveTo(points[tree[i][0]][0], points[tree[i][0]][1]);
-			            	ctx.lineTo(points[tree[i][1]][0], points[tree[i][1]][1]);
-			            	ctx.closePath();
-			        	}
-			        	ctx.stroke();
-			        	i++;
-			        	if (i < tree.length) {
-			            	drawLine();
-			        	}
-			        }, delay);
-			    }
-			    drawLine();
+    			for (var i = 0; i < 9999; i++) {
+    				clearInterval(i);
+    			}
+    			this.state.i = 0;
+    			setInterval(this.animateTree, this.state.delay);
+			    // var i = 0;
+			    // var delay = this.state.delay;
+			    // var points = this.state.points;
+			    // var tree = this.state.tree;
+			    // var treeType = event.target.value;
+			    // function drawLine() {
+			    // 	setTimeout(function () {
+			    //     	ctx.beginPath();
+			    //     	if (treeType == "frt") {
+			    //         	ctx.arc(points[tree[i][0]][0], points[tree[i][0]][1], tree[i][1], 0, 2 * Math.PI, false);
+			    //     	} else {
+			    //         	ctx.moveTo(points[tree[i][0]][0], points[tree[i][0]][1]);
+			    //         	ctx.lineTo(points[tree[i][1]][0], points[tree[i][1]][1]);
+			    //         	ctx.closePath();
+			    //     	}
+			    //     	ctx.stroke();
+			    //     	i++;
+			    //     	if (i < tree.length) {
+			    //         	drawLine();
+			    //     	}
+			    //     }, delay);
+			    // }
+			    // drawLine();
 			} else {
     			ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
 				if (event.target.value == "frt") {
@@ -211,7 +238,6 @@ class App extends React.Component {
 		if (event.target.value == 'worstcase') {
 			if (this.state.distortionPath != null) {
 				var argmax = [this.state.distortionPath[0][0], this.state.distortionPath[this.state.distortionPath.length - 1][1]];
-				console.log("the worst pair: " + argmax + " and is FRT: " + this.state.isFRT);
 				var path = this.state.distortionPath;
 			} else {
 				if (this.state.isFRT) {
@@ -227,13 +253,9 @@ class App extends React.Component {
 		} else {
 			if (this.state.isFRT) {
 				var argmax = [this.state.frtLeaves[Math.floor(Math.random() * this.state.numPoints)], this.state.frtLeaves[Math.floor(Math.random() * this.state.numPoints)]];
-				console.log("random frt:");
-				console.log(argmax);
 				this.state.frtRoot.resetVisited();
 				var path = findPath(this.state.points, [this.state.frtLeaves, this.state.frtRoot, argmax], this.state.isFRT);
 	    		argmax = [argmax[0].val.values().next().value, argmax[1].val.values().next().value];
-	    		console.log(argmax);
-	    		console.log(path);
 			} else {
 				var argmax = [Math.floor(Math.random() * this.state.numPoints), Math.floor(Math.random() * this.state.numPoints)];
 				var path = findPath(this.state.points, [this.state.tree, argmax], this.state.isFRT);
@@ -242,6 +264,9 @@ class App extends React.Component {
 		var ctx = this.refs.canvas.getContext('2d');
 		ctx.clearRect(0, 0, this.state.canvasWidth, this.state.canvasHeight);
 		this.drawPoints();
+		for (var i = 0; i < 9999; i++) {
+			clearInterval(i);
+		}
 		this.drawTree();
 	    ctx.strokeStyle = "rgb(255, 0, 0, 0.75)";
 	    for (var i = 0; i < path.length; i++) {
@@ -268,7 +293,7 @@ class App extends React.Component {
 
 	render() {
 		return e('div', null,
-			e('canvas', {ref:'canvas', width:this.state.canvasWidth, height:this.state.canvasHeight}, null),
+			e('canvas', {ref:'canvas', className:"plane", width:this.state.canvasWidth, height:this.state.canvasHeight}, null),
 			e('br'),
 			this.pointsGUI,
 			e('br'),
@@ -425,7 +450,7 @@ function FRT(points) {
     currlocs[i] = root;
   }
   circles.push([0, rad]);
-  while (r > 0 && !singletons(levels[levels.length - 1])) {
+  while (r >= 0 && !singletons(levels[levels.length - 1])) {
     rad /= 2;
     var nextlevel = new Set();
     var nextcurrlocs = {};
@@ -579,7 +604,6 @@ function findPath(points, args, isFRT) {
 	    while (fringe.length > 0) {
 	      var u = fringe.pop();
 	      if (u == t) {
-	      	console.log("found t");
 	        break;
 	      }
 	      u.visited = true;
@@ -596,7 +620,6 @@ function findPath(points, args, isFRT) {
 	    }
 	    path.push([t.val.values().next().value, t.loc]);
 	    while (t != s) {
-	    	console.log(path);
 	      path.push([t.loc, t.prev.loc]);
 	      t = t.prev;
 	    }
@@ -727,187 +750,3 @@ function calculateDistortion(points, args, isFRT) {
   console.log("worst case distortion: " + max);
   return argmax;
 }
-
-function main() {
-  var canvas = document.getElementById('canvas');
-  if (canvas.getContext) {
-    var ctx = canvas.getContext('2d');
-    ctx.fillStyle = "rgb(0, 0, 255, 0.75)";
-    ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
-    var width = 500;
-    var height = 500;
-    var numPoints = 3;
-    var treeType = "frt";
-    var delay = 0;
-    var points = generatePoints(width, height, numPoints);
-    console.log(points);
-
-    for (var i = 0; i < numPoints; i++) {
-      ctx.beginPath();
-      ctx.arc(points[i][0], points[i][1], 3, 0, 2 * Math.PI, false);
-      ctx.fill();
-    }
-
-    if (treeType == "frt") {
-      var frt = FRT(points);
-      var levels = frt[0];
-      var circles = frt[1];
-      var leaves = frt[2];
-      var root = levels[0].values().next().value;
-      var distortion = calculateDistortion(points, [leaves, root], true);
-    } else if (treeType == "prims") {
-      var prims = Prims(points);
-      var mst = prims[0];
-      var start = prims[1];
-      var distortion = calculateDistortion(points, mst, false);
-    } else if (treeType == "kruskals") {
-      var mst = Kruskals(points);
-      var distortion = calculateDistortion(points, mst, false);
-    } else if (treeType == "random") {
-      var mst = randomTree(points);
-      var distortion = calculateDistortion(points, mst, false);
-    }
-    var argmax = distortion[0];
-    var path = distortion[1];
-
-    // var z = 4;
-    // var frtAvgDistortion = [];
-    // var mstAvgDistortion = [];
-    // var randAvgDistortion = [];
-    // var frtMaxDistortion = [];
-    // var mstMaxDistortion = [];
-    // var randMaxDistortion = [];
-    // var iterations = 100;
-    // while (z < 10000) {
-    //   console.log("z: " + z);
-    //   var frtAvg = [];
-    //   var mstAvg = [];
-    //   var randAvg = [];
-    //   var frtMax = [];
-    //   var mstMax = [];
-    //   var randMax = [];
-    //   for (var y = 0; y < iterations; y++) {
-    //     var p = generatePoints(width, height, z);
-    //     var frt = FRT(p);
-    //     var leaves = frt[2];
-    //     var root = frt[0][0].values().next().value;
-    //     var frtdistortion = calculateDistortion(p, [leaves, root], true);
-    //     var mst = Prims(p)[0];
-    //     var mstdistortion = calculateDistortion(p, mst, false);
-    //     var rand = randomTree(p);
-    //     var randdistortion = calculateDistortion(p, rand, false);
-    //     frtAvg.push(frtdistortion[2]);
-    //     frtMax.push(frtdistortion[3]);
-    //     mstAvg.push(mstdistortion[2]);
-    //     mstMax.push(mstdistortion[3]);
-    //     randAvg.push(randdistortion[2]);
-    //     randMax.push(randdistortion[3]);
-    //   }
-    //   console.log(printList(frtAvg));
-    //   console.log(printList(frtMax));
-    //   console.log(printList(mstAvg));
-    //   console.log(printList(mstMax));
-    //   console.log(printList(randAvg));
-    //   console.log(printList(randMax));
-    //   frtAvgDistortion.push(frtAvg.reduce((a, b) => a + b) / iterations);
-    //   frtMaxDistortion.push(frtMax.reduce((a, b) => a + b) / iterations);
-    //   mstAvgDistortion.push(mstAvg.reduce((a, b) => a + b) / iterations);
-    //   mstMaxDistortion.push(mstMax.reduce((a, b) => a + b) / iterations);
-    //   randAvgDistortion.push(randAvg.reduce((a, b) => a + b) / iterations);
-    //   randMaxDistortion.push(randMax.reduce((a, b) => a + b) / iterations);
-    //   z *= 2;
-    // }
-    // console.log("FRT avg:");
-    // console.log(printList(frtAvgDistortion));
-    // console.log("FRT max:");
-    // console.log(printList(frtMaxDistortion));
-    // console.log("MST avg:");
-    // console.log(printList(mstAvgDistortion));
-    // console.log("MST max:");
-    // console.log(printList(mstMaxDistortion));
-    // console.log("random avg:");
-    // console.log(printList(randAvgDistortion));
-    // console.log("random max:");
-    // console.log(printList(randMaxDistortion));
-
-    if (delay > 0) {
-      // if (treeType == "prims") { // fix later
-      //   ctx.fillStyle = "rgb(255, 0, 0, 0.75)";
-      //   ctx.arc(points[start][0], points[start][1], 3, 0, 2 * Math.PI, false);
-      //   ctx.fill();
-      // }
-      if (treeType == "frt") {
-        var cap = circles.length;
-      } else {
-        var cap = mst.length;
-      }
-      var i = 0;
-      function drawLine () {
-        setTimeout(function () {
-          ctx.beginPath();
-          if (treeType == "frt") {
-            ctx.arc(points[circles[i][0]][0], points[circles[i][0]][1], circles[i][1], 0, 2 * Math.PI, false);
-          } else {
-            ctx.moveTo(points[mst[i][0]][0], points[mst[i][0]][1]);
-            ctx.lineTo(points[mst[i][1]][0], points[mst[i][1]][1]);
-            ctx.closePath();
-          }
-          ctx.stroke();
-          i++;
-          if (i < cap) {
-            drawLine();
-          }
-        }, delay);
-      }
-      drawLine();
-      // todo: draw worst case distortion after delay (maybe postpone until after gui?)
-    } else {
-      if (treeType == "frt") {
-        for (var i = 0; i < circles.length; i++) {
-          ctx.beginPath();
-          ctx.arc(points[circles[i][0]][0], points[circles[i][0]][1], circles[i][1], 0, 2 * Math.PI, false);
-          ctx.stroke();
-        }
-        ctx.strokeStyle = "rgb(255, 0, 0, 0.75)";
-        for (var i = 0; i < path.length; i++) {
-          ctx.beginPath();
-          ctx.moveTo(points[path[i][0]][0], points[path[i][0]][1]);
-          ctx.lineTo(points[path[i][1]][0], points[path[i][1]][1]);
-          ctx.stroke();
-        }
-        console.log("worst-case vertices: " + argmax[0].val.values().next().value + " " + argmax[1].val.values().next().value);
-        ctx.strokeStyle = "rgb(0, 255, 0, 0.75)";
-        ctx.beginPath();
-        ctx.moveTo(points[argmax[0].val.values().next().value][0], points[argmax[0].val.values().next().value][1]);
-        ctx.lineTo(points[argmax[1].val.values().next().value][0], points[argmax[1].val.values().next().value][1]);
-        ctx.stroke();
-      } else {
-        for (var i = 0; i < numPoints - 1; i++) {
-          ctx.beginPath();
-          ctx.moveTo(points[mst[i][0]][0], points[mst[i][0]][1]);
-          ctx.lineTo(points[mst[i][1]][0], points[mst[i][1]][1]);
-          ctx.closePath();
-          ctx.stroke();
-        }
-        ctx.strokeStyle = "rgb(255, 0, 0, 0.75)";
-        for (var i = 0; i < path.length; i++) {
-          ctx.beginPath();
-          ctx.moveTo(points[path[i][0]][0], points[path[i][0]][1]);
-          ctx.lineTo(points[path[i][1]][0], points[path[i][1]][1]);
-          ctx.closePath();
-          ctx.stroke();
-        }
-        console.log("worst-case vertices: " + argmax[0] + " " + argmax[1]);
-        ctx.strokeStyle = "rgb(0, 255, 0, 0.75)";
-        ctx.beginPath();
-        ctx.moveTo(points[argmax[0]][0], points[argmax[0]][1]);
-        ctx.lineTo(points[argmax[1]][0], points[argmax[1]][1]);
-        ctx.stroke();
-      }
-    }
-  }
-}
-
-// window.onload = function () {
-//   main();
-// }
