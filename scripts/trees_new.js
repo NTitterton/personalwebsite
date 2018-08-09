@@ -286,8 +286,11 @@ class App extends React.Component {
 	}
 
 	updateDelay(event) {
-		if (!isNaN(event.target.value) && parseInt(event.target.value, 10)) {
+		if (!isNaN(event.target.value) && parseInt(event.target.value, 10) >= 0) {
 			this.setState({delay:parseInt(event.target.value, 10)});
+		}
+		if (event.target.value == "") {
+			this.setState({delay:0});
 		}
 	}
 
