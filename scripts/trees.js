@@ -281,6 +281,65 @@ function randomTree(points) { // this is O(n log n) but I feel like there should
   return mst;
 }
 
+// function newTree(points, width, height) {
+//   // todo: redo this, but sort by xloc and yloc and then do a scan to create the tree (should be O(n log n))
+//   var prev = [];
+//   var pointIDs = [];
+//   for (var i = 0; i < points.length; i++) {
+//     prev.push(i);
+//     pointIDs.push(i);
+//   }
+//   function helper(prev, parent, x1, y1, x2, y2, candidates, candidateIDs) {
+//     var inzone  = [];
+//     var inzoneIDs = [];
+//     for (var i = 0; i < candidates.length; i++) {
+//       // console.log(x1, candidates[i][0], x2, y1, candidates[i][1], y2);
+//       if (x1 <= candidates[i][0] < x2 && y1 <= candidates[i][1] < y2) {
+//         inzone.push(candidates[i]);
+//         inzoneIDs.push(candidateIDs[i]);
+//       }
+//     }
+//     if (inzone.length == 0) {
+//       return;
+//     }
+//     var centerID = -1;
+//     var centerArrPos = -1;
+//     var bestDist = Infinity;
+//     for (var i = 0; i < inzone.length; i++) {
+//       if (l2dist([(x1 + x2) / 2, (y1 + y2) / 2], inzone[i]) < bestDist) {
+//         centerID = inzoneIDs[i];
+//         centerArrPos = i;
+//         bestDist = l2dist([(x1 + x2) / 2, (y1 + y2) / 2], inzone[i]);
+//       }
+//     }
+//     prev[centerID] = parent;
+//     console.log("updating prev");
+//     console.log(prev);
+//     inzone.splice(centerArrPos, 1);
+//     inzoneIDs.splice(centerArrPos, 1);
+//     xmed = (x1 + x2) / 2;
+//     ymed = (y1 + y2) / 2;
+//     helper(prev, centerID, x1, xmed, y1, ymed, inzone, inzoneIDs);
+//     helper(prev, centerID, xmed, x2, y1, ymed, inzone, inzoneIDs);
+//     helper(prev, centerID, x1, xmed, ymed, y2, inzone, inzoneIDs);
+//     helper(prev, centerID, xmed, x2, ymed, y2, inzone, inzoneIDs);
+//   }
+//   // console.log("points");
+//   // console.log(points);
+//   // console.log("point IDs");
+//   // console.log(pointIDs);
+//   helper(prev, null, 0, 0, width, height, points, pointIDs);
+//   var tree = [];
+//   for (var i = 0; i < prev.length; i++) {
+//     if (prev[i] != null) {
+//       tree.push([i, prev[i]]);
+//     }
+//   }
+//   console.log("tree:");
+//   console.log(tree);
+//   return tree;
+// }
+
 function calculateDistortion(points, args, isFRT) {
   var max = 1;
   var argmax = [-1, -1];
@@ -429,9 +488,9 @@ function main() {
     ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
     var width = 500;
     var height = 500;
-    var numPoints = 8;
-    var treeType = "frt";
-    var delay = 1000;
+    var numPoints = 100;
+    var treeType = "new";
+    var delay = 0;
     var points = generatePoints(width, height, numPoints);
     console.log(points);
 
@@ -459,9 +518,12 @@ function main() {
     } else if (treeType == "random") {
       var mst = randomTree(points);
       var distortion = calculateDistortion(points, mst, false);
-    }
-    var argmax = distortion[0];
-    var path = distortion[1];
+    }// } else if (treeType == "new") {
+    //   var mst = newTree(points, width, height);
+    //   // var distortion = calculateDistortion(points, mst, false);
+    // }
+    // var argmax = distortion[0];
+    // var path = distortion[1];
 
     // var z = 4;
     // var frtAvgDistortion = [];
@@ -481,10 +543,10 @@ function main() {
     //   var randMax = [];
     //   for (var y = 0; y < iterations; y++) {
     //     var p = generatePoints(width, height, z);
-    //     var frt = FRT(p);
-    //     var leaves = frt[2];
-    //     var root = frt[0][0].values().next().value;
-    //     var frtdistortion = calculateDistortion(p, [leaves, root], true);
+        // var frt = FRT(p);
+        // var leaves = frt[2];
+        // var root = frt[0][0].values().next().value;
+        // var frtdistortion = calculateDistortion(p, [leaves, root], true);
     //     var mst = Prims(p)[0];
     //     var mstdistortion = calculateDistortion(p, mst, false);
     //     var rand = randomTree(p);
@@ -522,13 +584,22 @@ function main() {
     // console.log(printList(randAvgDistortion));
     // console.log("random max:");
     // console.log(printList(randMaxDistortion));
+    // var x = [];
+    // var y = [];
+    // for (var i = 0; i < 100; i++) {
+    //   console.log(i);
+    //   var p = generatePoints(width, height, 1024);
+    //   var frt = FRT(p);
+    //   var leaves = frt[2];
+    //   var root = frt[0][0].values().next().value;
+    //   var frtdistortion = calculateDistortion(p, [leaves, root], true);
+    //   x.push(l2dist(p[0], [250, 250]));
+    //   y.push(frtdistortion[2]);
+    // }
+    // console.log(printList(x));
+    // console.log(printList(y));
 
     if (delay > 0) {
-      // if (treeType == "prims") { // fix later
-      //   ctx.fillStyle = "rgb(255, 0, 0, 0.75)";
-      //   ctx.arc(points[start][0], points[start][1], 3, 0, 2 * Math.PI, false);
-      //   ctx.fill();
-      // }
       if (treeType == "frt") {
         var cap = circles.length;
       } else {
@@ -553,7 +624,6 @@ function main() {
         }, delay);
       }
       drawLine();
-      // todo: draw worst case distortion after delay (maybe postpone until after gui?)
     } else {
       if (treeType == "frt") {
         for (var i = 0; i < circles.length; i++) {
@@ -582,20 +652,20 @@ function main() {
           ctx.closePath();
           ctx.stroke();
         }
-        ctx.strokeStyle = "rgb(255, 0, 0, 0.75)";
-        for (var i = 0; i < path.length; i++) {
-          ctx.beginPath();
-          ctx.moveTo(points[path[i][0]][0], points[path[i][0]][1]);
-          ctx.lineTo(points[path[i][1]][0], points[path[i][1]][1]);
-          ctx.closePath();
-          ctx.stroke();
-        }
-        console.log("worst-case vertices: " + argmax[0] + " " + argmax[1]);
-        ctx.strokeStyle = "rgb(0, 255, 0, 0.75)";
-        ctx.beginPath();
-        ctx.moveTo(points[argmax[0]][0], points[argmax[0]][1]);
-        ctx.lineTo(points[argmax[1]][0], points[argmax[1]][1]);
-        ctx.stroke();
+        // ctx.strokeStyle = "rgb(255, 0, 0, 0.75)";
+        // for (var i = 0; i < path.length; i++) {
+        //   ctx.beginPath();
+        //   ctx.moveTo(points[path[i][0]][0], points[path[i][0]][1]);
+        //   ctx.lineTo(points[path[i][1]][0], points[path[i][1]][1]);
+        //   ctx.closePath();
+        //   ctx.stroke();
+        // }
+        // console.log("worst-case vertices: " + argmax[0] + " " + argmax[1]);
+        // ctx.strokeStyle = "rgb(0, 255, 0, 0.75)";
+        // ctx.beginPath();
+        // ctx.moveTo(points[argmax[0]][0], points[argmax[0]][1]);
+        // ctx.lineTo(points[argmax[1]][0], points[argmax[1]][1]);
+        // ctx.stroke();
       }
     }
   }
