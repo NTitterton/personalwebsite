@@ -41,7 +41,7 @@
           <h4>The algorithm</h4>
           <p>the Fakcharoenphol-Rao-Tarjan algorithm forms a tree on a superset of nodes \(V' \supseteq V\), where the root node is the set of all vertices \(V\), and each node's children are a partition of it's parent node. This means all nodes form a laminar set, with the leaves being the original individual vertices.</p>
           <p>It does this by creating a random permutation of vertices (to prevent adversarial inputs), and then generates each level of the tree one-by-one. Starting with a root node as the first "level", it examines each vertex in permuted order. At each vertex, it finds the ball of vertices of a certain radius (at each level the radius halves), and if any vertices in the ball are not yet in the next level, the vertices become a new child of the current node they reside in.</p>
-          <img class="mr-3 img-fluid float-center rounded" src="./imgs/FRTsample.png" alt="Scraping comments">
+          <img class="mr-3 img-fluid float-center rounded" src="./imgs/FRTSample.png" alt="Scraping comments">
           <p>Here are two pseudocode versions of the above process, one from the original paper and one from Williamson's <i>Design of Approximation Algorithms</i>:</p>
           <img class="mr-3 img-fluid float-center rounded" src="./imgs/Algos.png" alt="Scraping comments">
           <p>Not counting the number of levels (which is usually low, around 10), these run in \(O(n^3)\), which is just not very usable. However, you can speed it up to \(O(n^2)\) using some hashmaps and keeping track of what node vertices lie in. I've implemented the \(O(n^2)\) in javascript like so (no permutation because the points are already randomly placed):</p>
