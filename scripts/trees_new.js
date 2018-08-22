@@ -184,29 +184,6 @@ class App extends React.Component {
     			}
     			this.state.i = 0;
     			setInterval(this.animateTree, this.state.delay);
-			    // var i = 0;
-			    // var delay = this.state.delay;
-			    // var points = this.state.points;
-			    // var tree = this.state.tree;
-			    // var treeType = event.target.value;
-			    // function drawLine() {
-			    // 	setTimeout(function () {
-			    //     	ctx.beginPath();
-			    //     	if (treeType == "frt") {
-			    //         	ctx.arc(points[tree[i][0]][0], points[tree[i][0]][1], tree[i][1], 0, 2 * Math.PI, false);
-			    //     	} else {
-			    //         	ctx.moveTo(points[tree[i][0]][0], points[tree[i][0]][1]);
-			    //         	ctx.lineTo(points[tree[i][1]][0], points[tree[i][1]][1]);
-			    //         	ctx.closePath();
-			    //     	}
-			    //     	ctx.stroke();
-			    //     	i++;
-			    //     	if (i < tree.length) {
-			    //         	drawLine();
-			    //     	}
-			    //     }, delay);
-			    // }
-			    // drawLine();
 			} else {
     			ctx.strokeStyle = "rgb(0, 0, 255, 0.75)";
 				if (event.target.value == "frt") {
