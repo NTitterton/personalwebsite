@@ -18,7 +18,7 @@
           <h2><a class="text-dark" href="./index.html">Nick Titterton</a></h2>
         </div>
         <div class="col-auto">
-          <h2><a class="text-muted" href="./index.html">About</a></h2>
+          <h2><a class="text-muted" href="./about.html">About</a></h2>
         </div>
         <div class="col-auto">
           <h2><a class="text-muted" href="./projects.html">Projects</a></h2>
@@ -27,7 +27,7 @@
           <h2><a class="text-muted" href="./blog.html">Web Log</a></h2>
         </div>
         <div class="col-auto">
-          <h2><a class="text-muted" href="./files/NickTittertonResumeJuly2018.pdf">Resume</a></h2>
+          <h2><a class="text-muted" href="./files/NickTittertonResumeAugust2018.pdf">Resume</a></h2>
         </div>
       </div>
       <div class="row justify-content-center mt-3">
@@ -35,7 +35,6 @@
         <h3>SDP Max Cut Approximator</h3>
         <p>While taking CS294-145 (Approximation Algorithms), I wanted to implement Goemans-Williamson's 0.879-approximation for max cut (I had also seen it in CS294-134 (Beyond Worst Case Analysis)). I wrote the randomized 0.5-approximation algorithm (pick a random cut with equal-sized halves), the derandomized greedy 0.5-approximation algorithm (repeatedly add a vertex to the set that increases the cut more) and the 0.879-approximation algorithm, using cxvpy and numpy. </p>
         <p>Code and basic tests can be found in the associated <a href="https://github.com/NTitterton/approximationproblems">Github repo</a>.</p>
-        <p>
         <h4>A Semidefinite Program for Max Cut</h4>
         <p>It is first reasonable to write an Integer Quadratic Program for Max Cut and see what we can do from there.</p>
         $$\text{maximize } \frac{1}{2}\sum\limits_{(i, j) \in E} w_{ij}(1 - x_i \cdot x_j)$$
