@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.283.1.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script type="text/javascript">
+   // Configure AWS SDK for JavaScript
+   AWS.config.update({region: 'us-east-1'});
+   AWS.config.credentials = new AWS.CognitoIdentityCredentials({IdentityPoolId: 'us-east-1:8a714758-286c-4691-adbc-4f374255eb70'});
+
+   var pullReturned = null;
+	
+   // Prepare to call Lambda function
+   var lambda = new AWS.Lambda({region: 'us-east-1', apiVersion: '2015-03-31'});
+   var pullParams = {
+      FunctionName : 'clusterMe',
+      InvocationType : 'RequestResponse',
+      LogType : 'None'
+   };
+   function submitaroo() {
+   		alert("hello!");
+		lambda.invoke(pullParams, function(err, data) {
+			if (err) {
+				prompt(err);
+			} else {
+				pullResults = JSON.parse(data.Payload);
+				displayPull();
+			}
+		});
+   }
+</script>
+<style>
+body {
+    background-image: url("./imgs/graph.png");
+}
+
+.background::before {
+	opacity: 0.5;
+}
+</style>
+  </head>
+  <body>
+  	<div class="background">
+  	<div align="center"><br><br><br><br><br><br>
+  	<img src="./imgs/clusterMelogo.png" /><br><br>
+  	<form onsubmit="submitaroo()">
+  		<input type="file" value="file"><br><br>
+  		<input type="text" value="node"><br><br>
+  		<input type="submit" value="Submit">
+  	</form>
+  	</div>
+  	</div>
+  </body>
