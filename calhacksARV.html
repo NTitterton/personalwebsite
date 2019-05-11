@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link rel="stylesheet" href="./style/main.css">
+
+    <title>Nick Titterton</title>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row justify-content-center bg-light">
+        <div class="col-auto">
+          <h2><a class="text-dark" href="./index.html">Nick Titterton</a></h2>
+        </div>
+        <div class="col-auto">
+          <h2><a class="text-muted" href="./about.html">About</a></h2>
+        </div>
+        <div class="col-auto">
+          <h2><a class="text-muted" href="./projects.html">Projects</a></h2>
+        </div>
+        <div class="col-auto">
+          <h2><a class="text-muted" href="./blog.html">Web Log</a></h2>
+        </div>
+        <div class="col-auto">
+          <h2><a class="text-muted" href="./files/NickTittertonResumeOctober2018.pdf">Resume</a></h2>
+        </div>
+      </div>
+      <div class="row justify-content-center mt-3">
+        <div class="col-9">
+          <h3>ARV at Calhacks 5.0</h3>
+          <h5 class="text-muted">2018 December 2</h5>
+          <p>I was accepted into Calhacks this year: my school's yearly hackathon. I have never really been a hackathon person: I didn't know what a hackathon was until some floormates of mine freshman year participated in Calhacks when I was a freshman (someone also brought it up as a question to DeNero in lecture). I didn't participate sophomore or junior year (sophomore year my roommate and I were offsite, but I ended up dropping out), but decided to apply senior year explicitly stating what I would do: implement the Arora-Rao-Vazirani \(\Theta(\sqrt{\log n})\) approximation algorithm for sparsest cut. The Rao is indeed our Satish Rao, and the Vazirani is our Umesh instead of his brother Vijay. Satish even poked in while Williamson went over the algorithm in our last two lectures of CS 294-145.</p>
+          <p>What is the sparsest cut problem? Suppose you have a graph and you want to partition the vertices into \(S\) and \(V - S\) to minimize
+            $$\frac{|\delta(S)|}{|S||V-S|}$$
+          . You'll notice this is a much trickier task than max cut, for which I implemented Goemans-Williamson <a href="./SDPmaxcut.html">here</a>, because while small cuts will have few edges, there are also fewer possible edges.</p>
+          <p> For my algorithm, I only delt with the unweighted version of this problem. The weighted version just changes the numerator in the fraction above to a sum of weights crossing the cut.</p>
+          <h4>The Algorithm</h4>
+          <p>As one might expect, the key here is to formulate a SDP and then manipulate the outputed vectors. I'll keep this short and explain the vector program:
+            $$\min\frac{1}{n^2}\sum_{e=(i,j)\in E} ||v_i - v_j||^2$$
+            $$\text{subject to } \sum_{i,j\in V, i\neq j} ||v_i - v_j||^2 = n^2$$
+            $$||v_i - v_j||^2 \leq ||v_i - v_k||^2 + ||v_k - v_j||^2 \hspace{1cm} \forall i, j, k \in V$$
+            $$v_i \in \mathbb{R}^n \hspace{1cm}\forall i \in V$$
+          In this program, similar to Goemans-Williamson, we are trying to push the vectors of pairs of nodes with an edge between them together (to minimize the objective function). The first constraint is sort of like a "normalization" constraint: it makes sure the average length of any node vector is about 1. More on this later. The second constraint is a metricity constraint, and the last one defines a vector program.</p>
+          <p>Once you have solved this program, you want to pick a subset of nodes that are sufficiently far away from all other nodes. Generate a random vector \(r\in\mathbb{R}^n\) and compute \(d(r, v_i) \hspace{0.2cm}\forall i\in V\). 
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+    <!-- React scripts -->
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="./scripts/.js"></script>
+  </body>
+</html>
