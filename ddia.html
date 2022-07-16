@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <link rel="stylesheet" href="./style/main.css">
+
+    <title>Nick Titterton</title>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row justify-content-center bg-light">
+        <div class="col-auto">
+          <h2><a class="text-dark" href="./index.html">Nick Titterton</a></h2>
+        </div>
+        <div class="col-auto">
+          <h2><a class="text-muted" href="./about.html">About</a></h2>
+        </div>
+        <div class="col-auto">
+          <h2><a class="text-muted" href="./projects.html">Projects</a></h2>
+        </div>
+        <div class="col-auto">
+          <h2><a class="text-muted" href="./blog.html">Web Log</a></h2>
+        </div>
+        <div class="col-auto">
+          <h2><a class="text-muted" href="./files/NickTittertonResumeCURRENT.pdf">Resume</a></h2>
+        </div>
+      </div>
+      <div class="row justify-content-center mt-3">
+        <div class="col-9">
+            <h3>Book Review: Designing Data Intensive Applications</h3>
+            <h5>15 July 2022</h5>
+            <img href="./imgs/DDIA_book.jpg" />
+            <p>"Designing Data Intensive Applications" by Martin Kleppmann is the <a href="https://martin.kleppmann.com/2020/09/29/is-book-writing-worth-it.html">most popular O'reilly publication</a>, and I can see why.
+               The book does not have tutorials, code snippets, or other 'applied' aspects of similar educational books, but instead goes for something of a collegiate introduction to distributed systems.
+            </p>
+            <p>When I finished a section or chapter, I wasn't inspired to go write a bot or something of that sort; instead, the reaction was often "gee, consensus seems darn near impossible!" or something of the sort. The sections of each chapter often flow like a mathematical derivation: first, you have too much data to fit on one machine, so you partition the machines, but now the machines need to agree on the most recent write for a value, so one machine is now considered the leader, but what if the leader goes down, so you need to have a way to elect a new leader, but what if the first leader comes back online, and so on and so on.
+               This back-and-forth of problem -> fix -> new problem caused by fix -> newer problem... occurred over and over. It reminded me of the economist's saying "there's no such thing as a free lunch" (or in this case, write).
+               Eventually the chapter would conclude with a survey of the mature approaches to a concept (replication, sharding, consensus, batch processing, etc) and the different strengths and tradeoffs of each one.
+            </p>
+            <p>How did I get recommended this book? It was suggested by my coworker-then-manager at Google, who said the log-based storage in chapter 3 was similar to our team's product, and that was accurate.
+               It was a useful 20 pages to understand what was going on with SSTables and all these shards. Little did I know what I was signing up for by finishing the other 530 pages.
+            </p>
+            <p>
+              So, what are the takeaways from such a huge book? Here are a couple:
+              <ul>
+                <li><b>Perfect consistency is either impossible or extremely painful to achieve, so design for a level of consistency that is acceptable and optimize for performance from there.</b>
+                  Lots of engineers already know the intuition behind choosing availability with eventual consistency from the CAP theorem, but there's lots more levels of consistency than just perfectly consistent versus evenutally consistent.
+                  Perfect consistency usually means some kind of consensus algorithm between machines like Raft or Paxos, Zookeeper doing some versioning, W + R > N, the whole nine yards.
+                  Consensus algorithms are especially odious to have to deal with, since they open up the possibility of unbounded delay.
+                  Whenever possible, try to partition data so it can be handled on one machine, deconflict transactions so they don't read or write on top of one another, use a single leader to prevent conflicts present with multiple leaders or leaderless replication.
+                  As for the business need for perfect consistency: this is often just not the case: if someone books a seat on an airplane that is already booked, money can be refunded and credits added to their account, or a bank transfer can be reversed and a similar apology can occur.
+                  'Rollback and apologize' consistency can alleviate the need for a strict consistency.
+                </li>
+                <li>
+                  <b>Logs are a good idea.</b>
+                  Logs for debugging/monitoring/analytics is already a common idea, but logs as the database itself can be very effective.
+                  Accountants already know this with their use of a large log of assets and liabilities!
+                  Logs show up as a good idea in replication logs to make multiple followers consistent, log-based storage, total order broadcast as a way of achieving consistency, as a way to pass messages between publishers and subscribers, and more.
+                  The advantage that shows up in most of these appearances is the ability to resolve ambiguities by referring to the log: which write happened first, what transaction a group of machines were processing before the leader went offline, where a machine was in processing messages before it went down, etc.
+                  Logs make recovering from downtime easy (just reread the log) or reversing transactions/events (perform an inverse transaction, and leave both in the log).
+                </li>
+                <li>
+                  <b>Seperate data into systems of record and derived data.</b>
+                  Often multiple teams within a company, who touch the same data, want to represent the data in many different ways.
+                  The best solution is to have a system that has the 'ground truth' data, the system of record, and to let many other teams transform that data into a useful, derived view (derived data).
+                  Like a replication log, this means a log is often the best system of record.
+                  This setup is what people often refer to as the 'data lake'.
+                  The advantage of this is, like a cloud service, you can use your data as many small, flexible, efficient but general-purpose parts, rather than many different teams using the same opaque (but often fast, specialized) database.
+                </li>
+                <li>
+                  <b>Avoiding or living with an issue can often be better than solving the issue.</b>
+                  A good database is not about collecting a list of buzzword properties.
+                  For example, what does it mean for something to be durable?
+                  Sure, the transaction resuming using a rollback log on disk if the machine shuts off halfway in is nice, but what if the disk is demagnetized?
+                  Or the transaction is lost in the network, or not correctly displayed by the banking UI, or not replicated to all followers, or someone runs a magnet over the disk, etc etc.
+                  Ultimately system designers choose to live with less-than-perfect durability rather than build ever-stronger failsafes.
+                  Now take serializability.
+                  Serializability is really hard. 2-phase locking is painful, and snapshot isolation still suffers from problems like write skew.
+                  Enter actual serial execution (via VoltDB): just run the database on one machine!
+                  But optimize that machine to be really fast, partition transactions and make sure memory is warm to perform transactions fast.
+                  That's avoiding the problem to begin with.
+                  This pattern of 'big single machine defeats years of distributed systems theory' recently played out in this <a href="https://twitter.com/alexcwatt/status/1544876135711916035">stackoverflow blog post</a>
+                </li>
+              </ul>
+            </p>
+            <p>Overall, I think database developers benefit most from this book (I saw a job ad for a Microsoft database team that explicitly said they give you a copy when you join), followed by software engineers dealing with lots of data and database operators (sysadmins and the like).
+               There's an astounding level of customization within each database that is hard to know how to optimally configure. Paragraphs often ended with "this isolation level/replication setup/etc. is called X in Voldemort, Y in Cassandra, and Z in Dynamo".
+               Once again, the book is meant to give a general overview of distributed systems, rather than specific advice on current tech.
+               Also, I would suggest as a prerequisite having already taken a databases class in college.
+               Lots of knowledge about relational databases and queries is assumed, although lots of content is repeated too (like 2-Phase locking or byzantine faults). 
+            </p>
+            <p>5⭐/5⭐</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+  </body>
+</html>
