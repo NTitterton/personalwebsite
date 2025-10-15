@@ -32,16 +32,34 @@
       </div>
       <div class="row justify-content-center mt-3">
         <div class="col-9">
-            <h3>Project: RedditorChat</h3>
-            <h5>9 February 2025</h5>
-            <img src="./imgs/redditorchat_screenshot.png" />
-            <p>To learn some new technologies, I've created <a href="https://redditorchat.vercel.app" >RedditorChat</a>, which allows you to input a Reddit username and then chat 
-                with an LLM instructed to act like that user.</p>
-            <p>The frontend is Next.js and Tailwind CSS, hosted on Vercel. The package manager is npm.</p>
-            <p>The backend is Express.js and Serverless (the framework) connected to my AWS account. The AWS resources are two API Gateway POSTs connected to one Lambda. The package manager is also npm.</p>
-            <p>The backend uses the OpenAI Completions API for the LLM and the Reddit API to get a redditor's recent comments. The code exists at <a href="https://github.com/NTitterton/redditorchat/tree/main">this github repo of mine</a>. You'll need to put these keys and the AWS access keys (for Serverless) into a .env in backend/, and the API gateway key (generated when you run "serverless deploy") into it's on .env in frontend/.</p>
-            <p>I used Cursor for the development, which was a great experience. Hoping to share more projects in the near future!</p>
-            <p><a href="https://redditorchat.vercel.app" >Try it out.</a></p>
+            <h3>Project: EmojiPlace</h3>
+            <h5>14 October 2025</h5>
+            <img src="./imgs/emojiplace.png" />
+            <p>Following up on RedditorChat (which was roughly February 2025), I wanted to do another project that was 1. vibecoded, and 2. utilized LLMs somehow. I had also always had the idea to make my own version of Reddit's r/place (which I enjoy) but with emojis instead of 8 or so pixel colors. Hence: emojiplace I mostly did this back in May and June, fyi.</p>
+            <p>For the backend, I had a rough and expensive time hosting some servers for a take home assignment for a job application in March, so this time around I wanted to do everything with Lambdas and serverless. I also wanted to utilize Redis (or some other kind of in-memory cache DB), since I had read about it so much in System Design Volume 2 (review forthcoming). However, keeping a Redis cache up broke the serverless idea, involved VPN ingress/egress (slow), and it was hard keeping the cache warm with such low traffic. So what I ended up on was lambdas managing websockets for realtime updates, and the pixel data being stored in DynamoDB, chunked in S3, and hosted with a CDN.</p>
+            <img src="./imgs/emojiplace_design.png" />
+            <p>Now for including LLMs: to help fill out the canvas a bit, I decided I was going to prompt LLMs to place pixels. They could store a plan and also send messages to other LLMs. I had one of Claude, Gemini, and GPT. An EventBridge cron job would trigger a lambda that looks at some of this memory stored in DynamoDB, makes some API calls, and makes the correct place_pixel lambda call. Also, you can inspect what the LLMs say to eachother in S3. The final feature I meant to build was to show the LLM messages in a chat window, but the LLMs were getting expensive (I dropped a couple hundred bucks on each one) for relatively disappointing emoji designs, so I stopped.</p>
+            <img src="./imgs/emojiplace_agents.png" />
+            <img src="./imgs/emojiplace_agent_chat.png" />
+            <p>You can read about the design in the <a href="https://github.com/NTitterton/emojiplace/blob/master/README.md">readme</a> and <a href="https://github.com/NTitterton/emojiplace/blob/master/project_design.md">system design</a>.</p>
+            <p>The frontend is Next.js on Vercel. Frankly, I don't know much of what's going on on the React side, but the grid is zoomable, infinite scrollable, and somewhat worked on mobile.</p>
+            <p>So, what do I think of vibecoding now? Well, it definitely increased my velocity for a brand new, greenfield project like this one. But I certainly felt like I was falling into loops with the LLM sometimes. Some of the key productivity-enhancing keys were:</p>
+            <ul>
+                <li>If you are stuck for a while, ask the LLM if you should give up and try a different approach. Typically the LLM will suggest something quite good.</li>
+                <li>Build early, build often. Vercel makes this super easy, since every push rebuilds and redeploys the frontend. It's also easy to roll back. There's also a realtime-updating local version using `npm run dev`. Great CICD there. As for the backend, that too was quite easy using `serverless deploy`.</li>
+                <li>Don't be afraid to roll back to a commit that works. LLMs also happen to be great at the tricky parts of git as well.</li>
+                <li>Frontend is hard. I'm far from an expert here and could probably benefit from learning more, but backend issues tended to be more easily debuggable</li>
+            </ul>
+            <p>Overall, and this is my experience in my day-to-day job at Atlassian too, LLMs are like extremely precocious toddlers: you can prompt it and out comes great code sometimes, but often it gets stuck going in circles, doesn't ask for help, or tries to lie about what it actually did. It also just sticks on way too much boilerplate code sometimes (great Karpathy tweet about that <a href="">here</a>). From what I've seen, senior engineers kind of treat them like on-demand junior engineers: mostly editing and giving design guidance, while the LLM writes the code.</p>
+            <p>Some takeaways from the experience.</p>
+            <ul>
+                <li>Lambdas are a godsend for low-traffic APIs.</li>
+                <li>Websockets are cool, and I should do more of them.</li>
+                <li>CDNs are also a godsend for speed, like websockets.</li>
+                <li>I'm proud of the architecture I settled on, but I really want to try one of those do-it-all BaaS (backend as a service) services like Firebase or Supabase next time.</li>
+                <li>LLMs aren't quitteee there for letting them go wild. You often need to tell them to trim the fat, don't break the build, remind them of the design, etc etc. Bad news for agents.</li>
+            </ul>
+            <p><a href="https://emojiplace.vercel.app" >Try it out.</a></p>
         </div>
       </div>
     </div>
