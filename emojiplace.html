@@ -34,13 +34,13 @@
         <div class="col-9">
             <h3>Project: EmojiPlace</h3>
             <h5>14 October 2025</h5>
-            <img src="./imgs/emojiplace.png" />
+            <img src="./imgs/emojiplace_resized.png" />
             <p>Following up on RedditorChat (which was roughly February 2025), I wanted to do another project that was 1. vibecoded, and 2. utilized LLMs somehow. I had also always had the idea to make my own version of Reddit's r/place (which I enjoy) but with emojis instead of 8 or so pixel colors. Hence: emojiplace I mostly did this back in May and June, fyi.</p>
             <p>For the backend, I had a rough and expensive time hosting some servers for a take home assignment for a job application in March, so this time around I wanted to do everything with Lambdas and serverless. I also wanted to utilize Redis (or some other kind of in-memory cache DB), since I had read about it so much in System Design Volume 2 (review forthcoming). However, keeping a Redis cache up broke the serverless idea, involved VPN ingress/egress (slow), and it was hard keeping the cache warm with such low traffic. So what I ended up on was lambdas managing websockets for realtime updates, and the pixel data being stored in DynamoDB, chunked in S3, and hosted with a CDN.</p>
-            <img src="./imgs/emojiplace_design.png" />
+            <img src="./imgs/emojiplace_design_resized.png" />
             <p>Now for including LLMs: to help fill out the canvas a bit, I decided I was going to prompt LLMs to place pixels. They could store a plan and also send messages to other LLMs. I had one of Claude, Gemini, and GPT. An EventBridge cron job would trigger a lambda that looks at some of this memory stored in DynamoDB, makes some API calls, and makes the correct place_pixel lambda call. Also, you can inspect what the LLMs say to eachother in S3. The final feature I meant to build was to show the LLM messages in a chat window, but the LLMs were getting expensive (I dropped a couple hundred bucks on each one) for relatively disappointing emoji designs, so I stopped.</p>
-            <img src="./imgs/emojiplace_agents.png" />
-            <img src="./imgs/emojiplace_agent_chat.png" />
+            <img src="./imgs/emojiplace_agents_resized.png" />
+            <img src="./imgs/emojiplace_agent_chat_resized.png" />
             <p>You can read about the design in the <a href="https://github.com/NTitterton/emojiplace/blob/master/README.md">readme</a> and <a href="https://github.com/NTitterton/emojiplace/blob/master/project_design.md">system design</a>.</p>
             <p>The frontend is Next.js on Vercel. Frankly, I don't know much of what's going on on the React side, but the grid is zoomable, infinite scrollable, and somewhat worked on mobile.</p>
             <p>So, what do I think of vibecoding now? Well, it definitely increased my velocity for a brand new, greenfield project like this one. But I certainly felt like I was falling into loops with the LLM sometimes. Some of the key productivity-enhancing keys were:</p>
