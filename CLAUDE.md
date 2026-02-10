@@ -37,5 +37,4 @@ python3 -m http.server 8000
 ## Git
 
 - Remote: `https://github.com/NTitterton/personalwebsite.git`
-- Main branch: `main`
-- `.gitignore` only excludes `.DS_Store`
+- Local branch is `main`, but the GitHub default branch is still `master`. Both exist on the remote. The deploy workflow triggers on `main`. This needs to be reconciled — either change GitHub's default to `main` or consolidate onto `master`.
